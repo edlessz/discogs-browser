@@ -18,14 +18,21 @@ export function TopBar({
 	collection,
 	onLoadCollection,
 }: TopBarProps) {
+	const releases = collection?.releases ?? [];
 	const uniqueFormats = [
 		...new Set(
-			(collection?.releases ?? []).flatMap(
+			releases.flatMap(
 				(release) =>
 					release.basic_information.formats?.map((format) => format.name) ?? [],
 			),
 		),
-	].sort();
+	].filter(format => format !== "All Media").sort();
+
+	const getFormatCount = (formatName: string) => {
+		return releases.filter(release =>
+			release.basic_information.formats?.some(format => format.name === formatName)
+		).length;
+	};
 
 	return (
 		<div className="flex gap-2 items-center justify-between">
@@ -58,7 +65,7 @@ export function TopBar({
 						onChange={(e) => setSelectedFormat(e.target.value)}
 						className="form-radio"
 					/>
-					<span>All</span>
+					<span>All ({releases.length})</span>
 				</label>
 				{uniqueFormats.map((formatName) => (
 					<label
@@ -73,7 +80,7 @@ export function TopBar({
 							onChange={(e) => setSelectedFormat(e.target.value)}
 							className="form-radio"
 						/>
-						<span>{formatName}</span>
+						<span>{formatName} ({getFormatCount(formatName)})</span>
 					</label>
 				))}
 			</div>
