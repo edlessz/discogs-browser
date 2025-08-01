@@ -13,7 +13,13 @@ body {
 }
 
 button {
-	@apply px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition;
+	&:not(.text) {
+		@apply shadow bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2;
+	}
+	&.text {
+		@apply border border-transparent bg-transparent focus:outline-none hover:bg-white/20 active:bg-white/30 focus:ring-2 focus:ring-white/50;
+	}
+	@apply px-4 py-2 text-white font-semibold rounded-md  transition;
 }
 
 input[type="text"] {

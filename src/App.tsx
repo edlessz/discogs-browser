@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
 import { getCollectionItemsByFolder, getMasterRelease } from "./api/discogs";
-import "./App.css";
 import type { CollectionItemsResponse } from "./api/types";
 import type { MasterRelease } from "./api/types/database";
-import { TopBar } from "./components/TopBar/TopBar";
 import { ReleasesTable } from "./components/ReleasesTable/ReleasesTable";
+import { ToastProvider, useToast } from "./components/Toast/ToastProvider";
+import { TopBar } from "./components/TopBar/TopBar";
 import {
 	cacheMasterRelease,
 	getAllCachedMasterReleases,
 	getCachedMasterRelease,
 } from "./db/masterReleasesDB";
 
-function App() {
+function AppContent() {
 	const [username, setUsername] = useState("");
+	const { showError } = useToast();
 
 	const [collection, setCollection] = useState<CollectionItemsResponse | null>(
 		null,
@@ -20,29 +21,41 @@ function App() {
 	const [selectedFormat, setSelectedFormat] = useState<string>("all");
 	const fetchCollection = async () => {
 		if (!username) return;
-		const data = await getCollectionItemsByFolder(username, 0);
-		setCollection(data);
 
-		const masterIds = [
-			...new Set(
-				(data.releases ?? []).map(
-					(release) => release.basic_information.master_id,
+		try {
+			const data = await getCollectionItemsByFolder(username, 0);
+			setCollection(data);
+
+			const masterIds = [
+				...new Set(
+					(data.releases ?? []).map(
+						(release) => release.basic_information.master_id,
+					),
 				),
-			),
-		];
+			];
 
-		for (const masterId of masterIds) {
-			if (!masterId || masterReleases[masterId]) continue;
+			for (const masterId of masterIds) {
+				if (!masterId || masterReleases[masterId]) continue;
 
-			const cached = await getCachedMasterRelease(masterId);
-			if (cached) {
-				setMasterReleases((prev) => ({ ...prev, [masterId]: cached }));
-				continue;
+				try {
+					const cached = await getCachedMasterRelease(masterId);
+					if (cached) {
+						setMasterReleases((prev) => ({ ...prev, [masterId]: cached }));
+						continue;
+					}
+
+					const masterRelease = await getMasterRelease(masterId);
+					setMasterReleases((prev) => ({ ...prev, [masterId]: masterRelease }));
+					cacheMasterRelease(masterRelease);
+				} catch (error) {
+					console.error(`Failed to fetch master release ${masterId}:`, error);
+				}
 			}
-
-			const masterRelease = await getMasterRelease(masterId);
-			setMasterReleases((prev) => ({ ...prev, [masterId]: masterRelease }));
-			cacheMasterRelease(masterRelease);
+		} catch (error) {
+			console.error("Failed to fetch collection:", error);
+			showError(
+				"Failed to load collection. Please check the username and try again.",
+			);
 		}
 	};
 
@@ -72,6 +85,14 @@ function App() {
 				/>
 			</div>
 		</div>
+	);
+}
+
+function App() {
+	return (
+		<ToastProvider>
+			<AppContent />
+		</ToastProvider>
 	);
 }
 

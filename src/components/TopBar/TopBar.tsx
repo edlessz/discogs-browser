@@ -22,9 +22,7 @@ export function TopBar({
 		...new Set(
 			(collection?.releases ?? []).flatMap(
 				(release) =>
-					release.basic_information.formats?.map(
-						(format) => format.name,
-					) ?? [],
+					release.basic_information.formats?.map((format) => format.name) ?? [],
 			),
 		),
 	].sort();
