@@ -68,10 +68,25 @@ export function ReleasesTable({
 				{
 					field: "basic_information.master_id",
 					header: "ID",
-					renderer: (row) =>
-						row.basic_information.master_id !== 0
+					renderer: (row) => {
+						const id = row.basic_information.master_id !== 0
 							? row.basic_information.master_id
-							: row.basic_information.id,
+							: row.basic_information.id;
+						const url = row.basic_information.master_id !== 0
+							? `https://www.discogs.com/master/${row.basic_information.master_id}`
+							: `https://www.discogs.com/release/${row.basic_information.id}`;
+						
+						return (
+							<a
+								href={url}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-blue-600 hover:text-blue-800 underline cursor-pointer"
+							>
+								{id}
+							</a>
+						);
+					},
 				},
 				{
 					field: "basic_information.artist",
