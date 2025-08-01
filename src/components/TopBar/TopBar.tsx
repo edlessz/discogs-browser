@@ -35,6 +35,11 @@ export function TopBar({
 					name="username"
 					value={username}
 					onChange={(e) => setUsername(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") {
+							onLoadCollection();
+						}
+					}}
 					id="username"
 					autoComplete="username"
 					placeholder="Discogs Username"
