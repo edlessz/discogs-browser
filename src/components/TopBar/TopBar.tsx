@@ -26,11 +26,15 @@ export function TopBar({
 					release.basic_information.formats?.map((format) => format.name) ?? [],
 			),
 		),
-	].filter(format => format !== "All Media").sort();
+	]
+		.filter((format) => format !== "All Media")
+		.sort();
 
 	const getFormatCount = (formatName: string) => {
-		return releases.filter(release =>
-			release.basic_information.formats?.some(format => format.name === formatName)
+		return releases.filter((release) =>
+			release.basic_information.formats?.some(
+				(format) => format.name === formatName,
+			),
 		).length;
 	};
 
@@ -80,7 +84,9 @@ export function TopBar({
 							onChange={(e) => setSelectedFormat(e.target.value)}
 							className="form-radio"
 						/>
-						<span>{formatName} ({getFormatCount(formatName)})</span>
+						<span>
+							{formatName} ({getFormatCount(formatName)})
+						</span>
 					</label>
 				))}
 			</div>

@@ -69,13 +69,15 @@ export function ReleasesTable({
 					field: "basic_information.master_id",
 					header: "ID",
 					renderer: (row) => {
-						const id = row.basic_information.master_id !== 0
-							? row.basic_information.master_id
-							: row.basic_information.id;
-						const url = row.basic_information.master_id !== 0
-							? `https://www.discogs.com/master/${row.basic_information.master_id}`
-							: `https://www.discogs.com/release/${row.basic_information.id}`;
-						
+						const id =
+							row.basic_information.master_id !== 0
+								? row.basic_information.master_id
+								: row.basic_information.id;
+						const url =
+							row.basic_information.master_id !== 0
+								? `https://www.discogs.com/master/${row.basic_information.master_id}`
+								: `https://www.discogs.com/release/${row.basic_information.id}`;
+
 						return (
 							<a
 								href={url}
