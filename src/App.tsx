@@ -1,18 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-	getCollectionFolders,
-	getCollectionItemsByFolder,
-	getMasterRelease,
-} from "./api/discogs";
+import { getCollectionItemsByFolder, getMasterRelease } from "./api/discogs";
 import "./App.css";
-import { Button, Input } from "@headlessui/react";
-import type {
-	CollectionFoldersResponse,
-	CollectionItemsResponse,
-	ReleaseInstance,
-} from "./api/types";
+import type { CollectionItemsResponse } from "./api/types";
 import type { MasterRelease } from "./api/types/database";
-import { Table } from "./components/Table/Table";
+import { TopBar } from "./components/TopBar/TopBar";
+import { ReleasesTable } from "./components/ReleasesTable/ReleasesTable";
 import {
 	cacheMasterRelease,
 	getAllCachedMasterReleases,
@@ -22,19 +14,14 @@ import {
 function App() {
 	const [username, setUsername] = useState("");
 
-	const [folders, setFolders] = useState<CollectionFoldersResponse | null>(
+	const [collection, setCollection] = useState<CollectionItemsResponse | null>(
 		null,
 	);
-	const fetchCollectionFolders = () => {
-		getCollectionFolders(username).then(setFolders);
-	};
-
-	const [collections, setCollections] = useState<
-		Record<number, CollectionItemsResponse>
-	>({});
-	const fetchCollectionFolder = async (folderId: number) => {
-		const data = await getCollectionItemsByFolder(username, folderId);
-		setCollections((prev) => ({ ...prev, [folderId]: data }));
+	const [selectedFormat, setSelectedFormat] = useState<string>("all");
+	const fetchCollection = async () => {
+		if (!username) return;
+		const data = await getCollectionItemsByFolder(username, 0);
+		setCollection(data);
 
 		const masterIds = [
 			...new Set(
@@ -67,75 +54,23 @@ function App() {
 	}, []);
 
 	return (
-		<div>
-			<div className="flex gap-2">
-				<Input
-					type="text"
-					name="username"
-					value={username}
-					onChange={(e) => setUsername(e.target.value)}
-					id="username"
-					autoComplete="username"
-					placeholder="Discogs Username"
+		<div className="h-full flex flex-col gap-2">
+			<TopBar
+				username={username}
+				setUsername={setUsername}
+				selectedFormat={selectedFormat}
+				setSelectedFormat={setSelectedFormat}
+				collection={collection}
+				onLoadCollection={fetchCollection}
+			/>
+			<div className="overflow-auto flex-1">
+				<ReleasesTable
+					className="w-full"
+					collection={collection}
+					selectedFormat={selectedFormat}
+					masterReleases={masterReleases}
 				/>
-				<Button type="button" onClick={fetchCollectionFolders}>
-					Get Folders
-				</Button>
 			</div>
-
-			{folders?.folders && (
-				<ul>
-					{folders.folders.map((folder) => (
-						<li key={folder.id}>
-							<Button
-								type="button"
-								onClick={() => fetchCollectionFolder(folder.id)}
-							>
-								{folder.name} ({folder.count})
-							</Button>
-
-							<Table<ReleaseInstance>
-								data={collections[folder.id]?.releases ?? []}
-								columns={[
-									{
-										key: true,
-										field: "instance_id",
-										header: "Instance ID",
-										hidden: true,
-									},
-									{
-										field: "basic_information.master_id",
-										header: "Master ID",
-										sortable: true,
-									},
-									{
-										field: "basic_information.artist",
-										header: "Artist",
-										sortable: true,
-										renderer: (row) =>
-											row.basic_information.artists
-												.map((x) => x.name)
-												.join(", "),
-									},
-									{
-										header: "Year",
-										sortable: true,
-										renderer: (row) =>
-											masterReleases[row.basic_information.master_id]?.year ??
-											row.basic_information.year ??
-											"Unknown",
-									},
-									{
-										field: "basic_information.title",
-										header: "Title",
-										sortable: true,
-									},
-								]}
-							/>
-						</li>
-					))}
-				</ul>
-			)}
 		</div>
 	);
 }

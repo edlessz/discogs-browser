@@ -1,7 +1,15 @@
 @import "tailwindcss";
 
+* {
+	@apply box-border;
+}
 body {
-	margin: 1rem;
+	height: 100vh;
+	padding: 1rem;
+}
+
+#root {
+	@apply h-full;
 }
 
 button {
