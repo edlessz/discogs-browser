@@ -45,7 +45,7 @@ export function TopBar({
 	};
 
 	return (
-		<div className="flex gap-2 items-center justify-between">
+		<div className="flex gap-2 items-center justify-between p-4">
 			<div className="flex gap-2 items-center">
 				<Input
 					type="text"

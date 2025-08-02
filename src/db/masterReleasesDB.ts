@@ -64,3 +64,14 @@ export async function cacheMasterRelease(
 		request.onerror = () => reject(request.error);
 	});
 }
+
+export async function clearCachedMasterReleases(): Promise<void> {
+	const db = await openDB();
+	return new Promise((resolve, reject) => {
+		const tx = db.transaction(STORE_NAME, "readwrite");
+		const store = tx.objectStore(STORE_NAME);
+		const request = store.clear();
+		request.onsuccess = () => resolve();
+		request.onerror = () => reject(request.error);
+	});
+}

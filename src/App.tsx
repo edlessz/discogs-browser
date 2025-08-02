@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getCollectionItemsByFolder, getMasterRelease } from "./api/discogs";
 import type { CollectionItemsResponse } from "./api/types";
 import type { MasterRelease } from "./api/types/database";
+import { Coverflow } from "./components/Coverflow/Coverflow";
 import { ReleasesTable } from "./components/ReleasesTable/ReleasesTable";
 import { ToastProvider, useToast } from "./components/Toast/ToastProvider";
 import { TopBar } from "./components/TopBar/TopBar";
@@ -70,7 +71,7 @@ function AppContent() {
 	}, []);
 
 	return (
-		<div className="h-full flex flex-col gap-2">
+		<div className="h-full flex flex-col">
 			<TopBar
 				username={username}
 				setUsername={setUsername}
@@ -81,18 +82,23 @@ function AppContent() {
 				viewMode={viewMode}
 				setViewMode={setViewMode}
 			/>
-			<div className="overflow-auto flex-1">
+			<div className="flex-1 overflow-auto">
 				{viewMode === "table" ? (
-					<ReleasesTable
+					<div className="p-4 h-full">
+						<ReleasesTable
+							className="w-full"
+							collection={collection}
+							selectedFormat={selectedFormat}
+							masterReleases={masterReleases}
+						/>
+					</div>
+				) : (
+					<Coverflow
 						className="w-full"
 						collection={collection}
 						selectedFormat={selectedFormat}
 						masterReleases={masterReleases}
 					/>
-				) : (
-					<div className="p-4 text-center text-gray-500">
-						Coverflow view - to be implemented
-					</div>
 				)}
 			</div>
 		</div>
