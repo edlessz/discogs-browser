@@ -11,6 +11,8 @@ import {
 	getCachedMasterRelease,
 } from "./db/masterReleasesDB";
 
+type ViewMode = "table" | "coverflow";
+
 function AppContent() {
 	const [username, setUsername] = useState("");
 	const { showError } = useToast();
@@ -19,6 +21,7 @@ function AppContent() {
 		null,
 	);
 	const [selectedFormat, setSelectedFormat] = useState<string>("all");
+	const [viewMode, setViewMode] = useState<ViewMode>("coverflow");
 	const fetchCollection = async () => {
 		if (!username) return;
 
@@ -75,14 +78,22 @@ function AppContent() {
 				setSelectedFormat={setSelectedFormat}
 				collection={collection}
 				onLoadCollection={fetchCollection}
+				viewMode={viewMode}
+				setViewMode={setViewMode}
 			/>
 			<div className="overflow-auto flex-1">
-				<ReleasesTable
-					className="w-full"
-					collection={collection}
-					selectedFormat={selectedFormat}
-					masterReleases={masterReleases}
-				/>
+				{viewMode === "table" ? (
+					<ReleasesTable
+						className="w-full"
+						collection={collection}
+						selectedFormat={selectedFormat}
+						masterReleases={masterReleases}
+					/>
+				) : (
+					<div className="p-4 text-center text-gray-500">
+						Coverflow view - to be implemented
+					</div>
+				)}
 			</div>
 		</div>
 	);
