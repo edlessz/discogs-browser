@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { Swiper as SwiperType } from "swiper";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { Swiper as SwiperType } from "swiper";
 import type { CollectionItemsResponse, ReleaseInstance } from "../../api/types";
 import type { MasterRelease } from "../../api/types/database";
 

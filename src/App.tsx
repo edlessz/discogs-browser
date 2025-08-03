@@ -4,18 +4,18 @@ import type { CollectionItemsResponse } from "./api/types";
 import type { MasterRelease } from "./api/types/database";
 import { Coverflow } from "./components/Coverflow/Coverflow";
 import { ReleasesTable } from "./components/ReleasesTable/ReleasesTable";
-import { ToastProvider, useToast } from "./components/Toast/ToastProvider";
+import { useToast } from "./components/Toast/ToastProvider";
 import { TopBar } from "./components/TopBar/TopBar";
 import {
 	cacheMasterRelease,
+	clearCachedMasterReleases,
 	getAllCachedMasterReleases,
 	getCachedMasterRelease,
-	clearCachedMasterReleases,
 } from "./db/masterReleasesDB";
 
 type ViewMode = "table" | "coverflow";
 
-function AppContent() {
+function App() {
 	const [username, setUsername] = useState("");
 	const { showError } = useToast();
 
@@ -70,16 +70,18 @@ function AppContent() {
 	useEffect(() => {
 		const checkClearParam = async () => {
 			const urlParams = new URLSearchParams(window.location.search);
-			if (urlParams.has('clear')) {
+			if (urlParams.has("clear")) {
 				try {
 					await clearCachedMasterReleases();
-					console.log('IndexedDB cache cleared');
+					console.log("IndexedDB cache cleared");
 					// Remove the clear parameter from URL to avoid clearing on refresh
-					urlParams.delete('clear');
-					const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-					window.history.replaceState({}, '', newUrl);
+					urlParams.delete("clear");
+					const newUrl =
+						window.location.pathname +
+						(urlParams.toString() ? `?${urlParams.toString()}` : "");
+					window.history.replaceState({}, "", newUrl);
 				} catch (error) {
-					console.error('Failed to clear IndexedDB cache:', error);
+					console.error("Failed to clear IndexedDB cache:", error);
 				}
 			}
 		};
@@ -125,14 +127,6 @@ function AppContent() {
 				)}
 			</div>
 		</div>
-	);
-}
-
-function App() {
-	return (
-		<ToastProvider>
-			<AppContent />
-		</ToastProvider>
 	);
 }
 
