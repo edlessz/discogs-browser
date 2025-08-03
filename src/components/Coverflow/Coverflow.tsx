@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { CollectionItemsResponse, ReleaseInstance } from "../../api/types";
+import type { CollectionItemsResponse } from "../../api/types";
 import type { MasterRelease } from "../../api/types/database";
+import { DISCOGS_URLS, SWIPER_CONFIG } from "../../constants/api";
+import { filterAndSortReleases, getFormats, getReleaseYear } from "../../utils";
 
 import "swiper/swiper-bundle.css";
 import "./Coverflow.css";
@@ -24,43 +26,12 @@ export function Coverflow({
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const swiperRef = useRef<SwiperType | null>(null);
 
-	const normalizeArtistName = (name: string) => {
-		return name.replace(/^(The|A|An)\s+/i, "").trim();
-	};
-
 	const filteredAndSortedReleases = collection
-		? (collection.releases ?? [])
-				.filter(
-					(release) =>
-						selectedFormat === "all" ||
-						release.basic_information.formats?.some(
-							(format) => format.name === selectedFormat,
-						),
-				)
-				.sort((a, b) => {
-					const artistA = normalizeArtistName(
-						a.basic_information.artists.map((x) => x.name).join(", "),
-					);
-					const artistB = normalizeArtistName(
-						b.basic_information.artists.map((x) => x.name).join(", "),
-					);
-
-					const yearA =
-						masterReleases[a.basic_information.master_id]?.year ??
-						a.basic_information.year ??
-						0;
-					const yearB =
-						masterReleases[b.basic_information.master_id]?.year ??
-						b.basic_information.year ??
-						0;
-
-					const artistComparison = artistA.localeCompare(artistB);
-					if (artistComparison !== 0) {
-						return artistComparison;
-					}
-
-					return yearA - yearB;
-				})
+		? filterAndSortReleases(
+				collection.releases ?? [],
+				selectedFormat,
+				masterReleases,
+			)
 		: [];
 
 	const handleKeyDown = useCallback((event: KeyboardEvent) => {
@@ -93,16 +64,6 @@ export function Coverflow({
 
 	const currentRelease = filteredAndSortedReleases[currentIndex];
 
-	const getFormats = (release: ReleaseInstance) => {
-		return [
-			...new Set(
-				release.basic_information.formats?.map((format) => format.name) ?? [],
-			),
-		]
-			.filter((x) => x !== "All Media")
-			.join(", ");
-	};
-
 	return (
 		<div className={`h-full flex flex-col ${className}`}>
 			<div className="flex-1 flex flex-col justify-center">
@@ -111,14 +72,14 @@ export function Coverflow({
 						effect="coverflow"
 						grabCursor={true}
 						centeredSlides={true}
-						slidesPerView={5}
+						slidesPerView={SWIPER_CONFIG.SLIDES_PER_VIEW}
 						coverflowEffect={{
-							rotate: 30,
-							stretch: 10,
-							depth: 100,
-							modifier: 1,
+							rotate: SWIPER_CONFIG.ROTATE,
+							stretch: SWIPER_CONFIG.STRETCH,
+							depth: SWIPER_CONFIG.DEPTH,
+							modifier: SWIPER_CONFIG.MODIFIER,
 							slideShadows: true,
-							scale: 1,
+							scale: SWIPER_CONFIG.SCALE,
 						}}
 						pagination={{
 							enabled: false,
@@ -171,10 +132,10 @@ export function Coverflow({
 								.join(", ")}
 						</p>
 						<p className="text-sm text-gray-500 mb-4">
-							{masterReleases[currentRelease.basic_information.master_id]
-								?.year ??
-								currentRelease.basic_information.year ??
-								"Unknown Year"}
+							{(() => {
+								const year = getReleaseYear(currentRelease, masterReleases);
+								return year === 0 ? "Unknown Year" : year;
+							})()}
 							{currentRelease.basic_information.formats && (
 								<span> • {getFormats(currentRelease)}</span>
 							)}
@@ -187,8 +148,8 @@ export function Coverflow({
 							<a
 								href={
 									currentRelease.basic_information.master_id !== 0
-										? `https://www.discogs.com/master/${currentRelease.basic_information.master_id}`
-										: `https://www.discogs.com/release/${currentRelease.basic_information.id}`
+										? `${DISCOGS_URLS.MASTER}${currentRelease.basic_information.master_id}`
+										: `${DISCOGS_URLS.RELEASE}${currentRelease.basic_information.id}`
 								}
 								target="_blank"
 								rel="noopener noreferrer"

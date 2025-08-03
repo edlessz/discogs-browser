@@ -1,7 +1,6 @@
 import { Button, Input } from "@headlessui/react";
 import type { CollectionItemsResponse } from "../../api/types";
-
-type ViewMode = "table" | "coverflow";
+import type { ViewMode } from "../../types";
 
 interface TopBarProps {
 	username: string;

@@ -1,6 +1,8 @@
-import type { CollectionItemsResponse, ReleaseInstance } from "../../api/types";
-import type { MasterRelease } from "../../api/types/database";
-import { Table } from "../Table/Table";
+import type { CollectionItemsResponse, ReleaseInstance } from "../api/types";
+import type { MasterRelease } from "../api/types/database";
+import { DISCOGS_URLS } from "../constants/api";
+import { filterAndSortReleases, getReleaseYear } from "../utils";
+import { Table } from "./Table";
 
 interface ReleasesTableProps {
 	collection: CollectionItemsResponse | null;
@@ -17,42 +19,11 @@ export function ReleasesTable({
 }: ReleasesTableProps) {
 	if (!collection) return null;
 
-	const normalizeArtistName = (name: string) => {
-		return name.replace(/^(The|A|An)\s+/i, "").trim();
-	};
-
-	const filteredAndSortedReleases = (collection.releases ?? [])
-		.filter(
-			(release) =>
-				selectedFormat === "all" ||
-				release.basic_information.formats?.some(
-					(format) => format.name === selectedFormat,
-				),
-		)
-		.sort((a, b) => {
-			const artistA = normalizeArtistName(
-				a.basic_information.artists.map((x) => x.name).join(", "),
-			);
-			const artistB = normalizeArtistName(
-				b.basic_information.artists.map((x) => x.name).join(", "),
-			);
-
-			const yearA =
-				masterReleases[a.basic_information.master_id]?.year ??
-				a.basic_information.year ??
-				0;
-			const yearB =
-				masterReleases[b.basic_information.master_id]?.year ??
-				b.basic_information.year ??
-				0;
-
-			const artistComparison = artistA.localeCompare(artistB);
-			if (artistComparison !== 0) {
-				return artistComparison;
-			}
-
-			return yearA - yearB;
-		});
+	const filteredAndSortedReleases = filterAndSortReleases(
+		collection.releases ?? [],
+		selectedFormat,
+		masterReleases,
+	);
 
 	return (
 		<div className="overflow-auto h-full">
@@ -76,8 +47,8 @@ export function ReleasesTable({
 									: row.basic_information.id;
 							const url =
 								row.basic_information.master_id !== 0
-									? `https://www.discogs.com/master/${row.basic_information.master_id}`
-									: `https://www.discogs.com/release/${row.basic_information.id}`;
+									? `${DISCOGS_URLS.MASTER}${row.basic_information.master_id}`
+									: `${DISCOGS_URLS.RELEASE}${row.basic_information.id}`;
 
 							return (
 								<a
@@ -99,10 +70,10 @@ export function ReleasesTable({
 					},
 					{
 						header: "Year",
-						renderer: (row) =>
-							masterReleases[row.basic_information.master_id]?.year ??
-							row.basic_information.year ??
-							"Unknown",
+						renderer: (row) => {
+							const year = getReleaseYear(row, masterReleases);
+							return year === 0 ? "Unknown" : year;
+						},
 					},
 					{
 						field: "basic_information.title",

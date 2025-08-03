@@ -35,8 +35,8 @@ export async function getAllCachedMasterReleases(): Promise<
 > {
 	const db = await openDB();
 	return new Promise((resolve, reject) => {
-		const tx = db.transaction("masterReleases", "readonly");
-		const store = tx.objectStore("masterReleases");
+		const tx = db.transaction(STORE_NAME, "readonly");
+		const store = tx.objectStore(STORE_NAME);
 		const request = store.getAll();
 
 		request.onsuccess = () => {

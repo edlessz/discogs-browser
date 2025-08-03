@@ -1,5 +1,6 @@
 import { Button } from "@headlessui/react";
 import { useCallback, useEffect, useState } from "react";
+import { TOAST_CONFIG } from "../../constants/api";
 import "./Toast.css";
 
 export type ToastType = "error" | "success" | "info";
@@ -16,7 +17,7 @@ export function Toast({
 	id,
 	message,
 	type,
-	duration = 5000,
+	duration = TOAST_CONFIG.DEFAULT_DURATION,
 	onDismiss,
 }: ToastProps) {
 	const [isExiting, setIsExiting] = useState(false);
@@ -25,7 +26,7 @@ export function Toast({
 		setIsExiting(true);
 		setTimeout(() => {
 			onDismiss(id);
-		}, 300); // Match animation duration
+		}, TOAST_CONFIG.ANIMATION_DURATION); // Match animation duration
 	}, [id, onDismiss]);
 
 	useEffect(() => {

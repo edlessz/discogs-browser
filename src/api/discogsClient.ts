@@ -1,9 +1,10 @@
 import axios from "axios";
+import { API_CONFIG } from "../constants/api";
 
 const discogsClient = axios.create({
-	baseURL: "https://api.discogs.com",
+	baseURL: API_CONFIG.BASE_URL,
 	params: {
-		per_page: 100,
+		per_page: API_CONFIG.DEFAULT_PER_PAGE,
 	},
 });
 
@@ -40,12 +41,12 @@ discogsClient.interceptors.response.use(
 			: Infinity;
 
 		// Throttle if remaining calls are very low
-		if (rateLimitRemaining <= 2) {
+		if (rateLimitRemaining <= API_CONFIG.RATE_LIMIT_THRESHOLD) {
 			isThrottled = true;
 			setTimeout(() => {
 				isThrottled = false;
 				processQueue();
-			}, 2000); // pause 2 seconds before releasing queue
+			}, API_CONFIG.THROTTLE_DELAY); // pause before releasing queue
 		} else {
 			processQueue();
 		}

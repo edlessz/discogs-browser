@@ -3,9 +3,9 @@ import { getCollectionItemsByFolder, getMasterRelease } from "./api/discogs";
 import type { CollectionItemsResponse } from "./api/types";
 import type { MasterRelease } from "./api/types/database";
 import { Coverflow } from "./components/Coverflow/Coverflow";
-import { ReleasesTable } from "./components/ReleasesTable/ReleasesTable";
+import { ReleasesTable } from "./components/ReleasesTable";
 import { useToast } from "./components/Toast/ToastProvider";
-import { TopBar } from "./components/TopBar/TopBar";
+import { TopBar } from "./components/TopBar";
 import {
 	cacheMasterRelease,
 	clearCachedMasterReleases,
@@ -73,7 +73,6 @@ function App() {
 			if (urlParams.has("clear")) {
 				try {
 					await clearCachedMasterReleases();
-					console.log("IndexedDB cache cleared");
 					// Remove the clear parameter from URL to avoid clearing on refresh
 					urlParams.delete("clear");
 					const newUrl =
