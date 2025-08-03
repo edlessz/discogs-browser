@@ -10,6 +10,7 @@ import {
 	cacheMasterRelease,
 	getAllCachedMasterReleases,
 	getCachedMasterRelease,
+	clearCachedMasterReleases,
 } from "./db/masterReleasesDB";
 
 type ViewMode = "table" | "coverflow";
@@ -67,7 +68,29 @@ function AppContent() {
 		Record<number, MasterRelease>
 	>({});
 	useEffect(() => {
-		getAllCachedMasterReleases().then(setMasterReleases);
+		const checkClearParam = async () => {
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('clear')) {
+				try {
+					await clearCachedMasterReleases();
+					console.log('IndexedDB cache cleared');
+					// Remove the clear parameter from URL to avoid clearing on refresh
+					urlParams.delete('clear');
+					const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+					window.history.replaceState({}, '', newUrl);
+				} catch (error) {
+					console.error('Failed to clear IndexedDB cache:', error);
+				}
+			}
+		};
+
+		const loadCachedData = async () => {
+			await checkClearParam();
+			const cachedReleases = await getAllCachedMasterReleases();
+			setMasterReleases(cachedReleases);
+		};
+
+		loadCachedData();
 	}, []);
 
 	return (
