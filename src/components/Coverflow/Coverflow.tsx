@@ -71,10 +71,23 @@ export function Coverflow({
 		}
 	}, []);
 
+	const handleWheel = useCallback((event: WheelEvent) => {
+		event.preventDefault();
+		if (event.deltaY > 0) {
+			swiperRef.current?.slideNext();
+		} else if (event.deltaY < 0) {
+			swiperRef.current?.slidePrev();
+		}
+	}, []);
+
 	useEffect(() => {
 		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [handleKeyDown]);
+		window.addEventListener("wheel", handleWheel, { passive: false });
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("wheel", handleWheel);
+		};
+	}, [handleKeyDown, handleWheel]);
 
 	if (!collection) return null;
 
