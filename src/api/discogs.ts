@@ -15,11 +15,38 @@ export const getCollectionFolders = async (username: string) => {
 export const getCollectionItemsByFolder = async (
 	username: string,
 	folderId: number,
-) => {
-	const res = await client.get<CollectionItemsResponse>(
-		`/users/${username}/collection/folders/${folderId}/releases`,
-	);
-	return res.data;
+): Promise<CollectionItemsResponse> => {
+	let allReleases: CollectionItemsResponse["releases"] = [];
+	let nextUrl: string | undefined =
+		`/users/${username}/collection/folders/${folderId}/releases`;
+	let lastResponse: CollectionItemsResponse | null = null;
+
+	while (nextUrl) {
+		// Extract path from full URL if needed
+		const url: string = nextUrl.startsWith("http")
+			? new URL(nextUrl).pathname + new URL(nextUrl).search
+			: nextUrl;
+		const res = await client.get<CollectionItemsResponse>(url);
+		lastResponse = res.data;
+		allReleases = [...allReleases, ...res.data.releases];
+
+		// Get the next URL from pagination, or undefined if no more pages
+		nextUrl = res.data.pagination.urls.next;
+	}
+
+	// Return the combined results with updated pagination info
+	return {
+		...(lastResponse as CollectionItemsResponse),
+		releases: allReleases,
+		pagination: {
+			...(lastResponse?.pagination ?? {}),
+			items: allReleases.length,
+			page: 1,
+			pages: 1,
+			urls: {},
+			per_page: allReleases.length,
+		},
+	};
 };
 
 export const getMasterRelease = async (masterId: number) => {
