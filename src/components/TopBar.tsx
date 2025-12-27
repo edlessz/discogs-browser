@@ -1,6 +1,8 @@
-import { Button, Input } from "@headlessui/react";
-import type { CollectionItemsResponse } from "../../api/types";
-import type { ViewMode } from "../../types";
+import type { CollectionItemsResponse, ViewMode } from "@/api/types";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 interface TopBarProps {
 	username: string;
@@ -64,61 +66,34 @@ export function TopBar({
 					Load Collection
 				</Button>
 			</div>
-			<div className="flex gap-2 items-center">
-				<label className="flex items-center gap-2 cursor-pointer">
-					<input
-						type="radio"
-						name="viewMode"
-						value="table"
-						checked={viewMode === "table"}
-						onChange={(e) => setViewMode(e.target.value as ViewMode)}
-						className="form-radio"
-					/>
-					<span>Table</span>
-				</label>
-				<label className="flex items-center gap-2 cursor-pointer">
-					<input
-						type="radio"
-						name="viewMode"
-						value="coverflow"
-						checked={viewMode === "coverflow"}
-						onChange={(e) => setViewMode(e.target.value as ViewMode)}
-						className="form-radio"
-					/>
-					<span>Coverflow</span>
-				</label>
-			</div>
-			<div className="flex gap-2 items-center">
-				<label className="flex items-center gap-2 cursor-pointer">
-					<input
-						type="radio"
-						name="format"
-						value="all"
-						checked={selectedFormat === "all"}
-						onChange={(e) => setSelectedFormat(e.target.value)}
-						className="form-radio"
-					/>
-					<span>All ({releases.length})</span>
-				</label>
+			<RadioGroup className="flex" onValueChange={setViewMode} value={viewMode}>
+				<div className="flex items-center gap-2">
+					<RadioGroupItem value="table" id="r1"></RadioGroupItem>
+					<Label htmlFor="r1">Table</Label>
+				</div>
+				<div className="flex items-center gap-2">
+					<RadioGroupItem value="coverflow" id="r2"></RadioGroupItem>
+					<Label htmlFor="r2">Coverflow</Label>
+				</div>
+			</RadioGroup>
+			<RadioGroup
+				className="flex"
+				onValueChange={setSelectedFormat}
+				value={selectedFormat}
+			>
+				<div className="flex items-center gap-2">
+					<RadioGroupItem value="all" id="all"></RadioGroupItem>
+					<Label htmlFor="all">All ({releases.length})</Label>
+				</div>
 				{uniqueFormats.map((formatName) => (
-					<label
-						key={formatName}
-						className="flex items-center gap-2 cursor-pointer"
-					>
-						<input
-							type="radio"
-							name="format"
-							value={formatName}
-							checked={selectedFormat === formatName}
-							onChange={(e) => setSelectedFormat(e.target.value)}
-							className="form-radio"
-						/>
-						<span>
+					<div key={formatName} className="flex items-center gap-2">
+						<RadioGroupItem value={formatName} id={formatName}></RadioGroupItem>
+						<Label htmlFor={formatName}>
 							{formatName} ({getFormatCount(formatName)})
-						</span>
-					</label>
+						</Label>
+					</div>
 				))}
-			</div>
+			</RadioGroup>
 		</div>
 	);
 }

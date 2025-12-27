@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { getCollectionItemsByFolder, getMasterRelease } from "./api/discogs";
-import type { CollectionItemsResponse } from "./api/types";
+import type { CollectionItemsResponse, ViewMode } from "./api/types";
 import type { MasterRelease } from "./api/types/database";
-import { Coverflow } from "./components/Coverflow/Coverflow";
+import { Coverflow } from "./components/Coverflow";
 import { ReleasesTable } from "./components/ReleasesTable";
-import { useToast } from "./components/Toast/ToastProvider";
 import { TopBar } from "./components/TopBar";
 import {
 	cacheMasterRelease,
@@ -13,11 +13,8 @@ import {
 	getCachedMasterRelease,
 } from "./db/masterReleasesDB";
 
-type ViewMode = "table" | "coverflow";
-
 function App() {
 	const [username, setUsername] = useState("");
-	const { showError } = useToast();
 
 	const [collection, setCollection] = useState<CollectionItemsResponse | null>(
 		null,
@@ -56,11 +53,8 @@ function App() {
 					console.error(`Failed to fetch master release ${masterId}:`, error);
 				}
 			}
-		} catch (error) {
-			console.error("Failed to fetch collection:", error);
-			showError(
-				"Failed to load collection. Please check the username and try again.",
-			);
+		} catch {
+			toast.error("Failed to load collection.");
 		}
 	};
 
@@ -95,7 +89,7 @@ function App() {
 	}, []);
 
 	return (
-		<div className="h-full flex flex-col">
+		<div className="h-screen flex flex-col">
 			<TopBar
 				username={username}
 				setUsername={setUsername}

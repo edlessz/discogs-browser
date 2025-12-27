@@ -51,12 +51,7 @@ export function ReleasesTable({
 									: `${DISCOGS_URLS.RELEASE}${row.basic_information.id}`;
 
 							return (
-								<a
-									href={url}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-blue-600 hover:text-blue-800 underline cursor-pointer"
-								>
+								<a href={url} target="_blank" rel="noopener noreferrer">
 									{id}
 								</a>
 							);

@@ -50,7 +50,7 @@ export function Table<T>({
 
 	return (
 		<table aria-label="Data table" className={className}>
-			<thead className="bg-gray-100 sticky top-0 z-10">
+			<thead className="bg-card sticky top-0 z-10">
 				<tr>
 					{columnKeys.map(
 						(col, idx) =>
@@ -58,7 +58,7 @@ export function Table<T>({
 								<th
 									key={col.field ?? idx}
 									scope="col"
-									className="px-4 py-2 text-left bg-gray-100"
+									className="px-4 py-2 text-left bg-card"
 								>
 									<div className="flex gap-2 justify-between">{col.header}</div>
 								</th>
@@ -69,7 +69,10 @@ export function Table<T>({
 			<tbody>
 				{data.length === 0 ? (
 					<tr>
-						<td colSpan={columnKeys.length} className="text-gray-500 italic">
+						<td
+							colSpan={columnKeys.length}
+							className="text-muted-foreground italic"
+						>
 							{emptyMessage}
 						</td>
 					</tr>

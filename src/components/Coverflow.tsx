@@ -2,13 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { CollectionItemsResponse } from "../../api/types";
-import type { MasterRelease } from "../../api/types/database";
-import { DISCOGS_URLS, SWIPER_CONFIG } from "../../constants/api";
-import { filterAndSortReleases, getFormats, getReleaseYear } from "../../utils";
+import type { CollectionItemsResponse } from "../api/types";
+import type { MasterRelease } from "../api/types/database";
+import { DISCOGS_URLS, SWIPER_CONFIG } from "../constants/api";
+import { filterAndSortReleases, getFormats, getReleaseYear } from "../utils";
 
 import "swiper/swiper-bundle.css";
-import "./Coverflow.css";
 
 interface CoverflowProps {
 	collection: CollectionItemsResponse | null;
@@ -101,7 +100,7 @@ export function Coverflow({
 										className="w-full h-full object-contain"
 									/>
 								) : (
-									<div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg shadow-lg">
+									<div className="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-300 to-gray-400 rounded-lg shadow-lg">
 										<div className="text-center p-4">
 											<div className="text-sm font-semibold text-gray-700 mb-1">
 												{release.basic_information.artists
@@ -121,17 +120,17 @@ export function Coverflow({
 			</div>
 
 			{currentRelease && (
-				<div className="bg-gray-50 p-6">
+				<div className="bg-background p-6">
 					<div className="max-w-4xl mx-auto text-center">
-						<h2 className="text-2xl font-bold text-gray-900 mb-2">
+						<h2 className="text-2xl font-bold text-foreground mb-2">
 							{currentRelease.basic_information.title}
 						</h2>
-						<p className="text-lg text-gray-700 mb-1">
+						<p className="text-lg text-muted-foreground mb-1">
 							{currentRelease.basic_information.artists
 								.map((x) => x.name)
 								.join(", ")}
 						</p>
-						<p className="text-sm text-gray-500 mb-4">
+						<p className="text-sm text-muted-foreground mb-4">
 							{(() => {
 								const year = getReleaseYear(currentRelease, masterReleases);
 								return year === 0 ? "Unknown Year" : year;
@@ -140,7 +139,7 @@ export function Coverflow({
 								<span> • {getFormats(currentRelease)}</span>
 							)}
 						</p>
-						<div className="flex justify-center gap-4 text-sm text-gray-600">
+						<div className="flex justify-center gap-4 text-sm text-muted-foreground">
 							<span>
 								{currentIndex + 1} of {filteredAndSortedReleases.length}
 							</span>
@@ -153,7 +152,6 @@ export function Coverflow({
 								}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-blue-600 hover:text-blue-800 underline"
 							>
 								View on Discogs
 							</a>
