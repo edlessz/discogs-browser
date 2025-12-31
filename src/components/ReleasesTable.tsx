@@ -1,20 +1,17 @@
-import type { CollectionItemsResponse, ReleaseInstance } from "../api/types";
-import type { MasterRelease } from "../api/types/database";
-import { DISCOGS_URLS } from "../constants/api";
-import { filterAndSortReleases, getReleaseYear } from "../utils";
-import { Table } from "./Table";
+import { DISCOGS_URLS } from "@/api/constants";
+import type { CollectionItemsResponse, ReleaseInstance } from "@/api/types";
+import { Table } from "@/components/Table";
+import { filterAndSortReleases } from "@/lib/utils";
 
 interface ReleasesTableProps {
-	collection: CollectionItemsResponse | null;
+	collection: CollectionItemsResponse | null | undefined;
 	selectedFormat: string;
-	masterReleases: Record<number, MasterRelease>;
 	className?: string;
 }
 
 export function ReleasesTable({
 	collection,
 	selectedFormat,
-	masterReleases,
 	className = "",
 }: ReleasesTableProps) {
 	if (!collection) return null;
@@ -22,7 +19,6 @@ export function ReleasesTable({
 	const filteredAndSortedReleases = filterAndSortReleases(
 		collection.releases ?? [],
 		selectedFormat,
-		masterReleases,
 	);
 
 	return (
@@ -66,7 +62,7 @@ export function ReleasesTable({
 					{
 						header: "Year",
 						renderer: (row) => {
-							const year = getReleaseYear(row, masterReleases);
+							const year = row.basic_information.year;
 							return year === 0 ? "Unknown" : year;
 						},
 					},

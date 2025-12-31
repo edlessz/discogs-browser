@@ -1,92 +1,32 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getCollectionItemsByFolder, getMasterRelease } from "./api/discogs";
-import type { CollectionItemsResponse, ViewMode } from "./api/types";
-import type { MasterRelease } from "./api/types/database";
-import { Coverflow } from "./components/Coverflow";
-import { ReleasesTable } from "./components/ReleasesTable";
-import { TopBar } from "./components/TopBar";
-import {
-	cacheMasterRelease,
-	clearCachedMasterReleases,
-	getAllCachedMasterReleases,
-	getCachedMasterRelease,
-} from "./db/masterReleasesDB";
+import { useCollection } from "@/api/queries/useCollection";
+import type { ViewMode } from "@/api/types";
+import { Coverflow } from "@/components/Coverflow";
+import { ReleasesTable } from "@/components/ReleasesTable";
+import { TopBar } from "@/components/TopBar";
 
 function App() {
 	const [username, setUsername] = useState("");
-
-	const [collection, setCollection] = useState<CollectionItemsResponse | null>(
-		null,
-	);
+	const [shouldFetch, setShouldFetch] = useState(false);
 	const [selectedFormat, setSelectedFormat] = useState<string>("all");
 	const [viewMode, setViewMode] = useState<ViewMode>("coverflow");
-	const fetchCollection = async () => {
-		if (!username) return;
 
-		try {
-			const data = await getCollectionItemsByFolder(username, 0);
-			setCollection(data);
+	const { data: collection, error } = useCollection(
+		shouldFetch ? username : "",
+		0,
+	);
 
-			const masterIds = [
-				...new Set(
-					(data.releases ?? []).map(
-						(release) => release.basic_information.master_id,
-					),
-				),
-			];
-
-			for (const masterId of masterIds) {
-				if (!masterId || masterReleases[masterId]) continue;
-
-				try {
-					const cached = await getCachedMasterRelease(masterId);
-					if (cached) {
-						setMasterReleases((prev) => ({ ...prev, [masterId]: cached }));
-						continue;
-					}
-
-					const masterRelease = await getMasterRelease(masterId);
-					setMasterReleases((prev) => ({ ...prev, [masterId]: masterRelease }));
-					cacheMasterRelease(masterRelease);
-				} catch (error) {
-					console.error(`Failed to fetch master release ${masterId}:`, error);
-				}
-			}
-		} catch {
+	useEffect(() => {
+		if (error) {
 			toast.error("Failed to load collection.");
 		}
+	}, [error]);
+
+	const fetchCollection = () => {
+		if (!username) return;
+		setShouldFetch(true);
 	};
-
-	const [masterReleases, setMasterReleases] = useState<
-		Record<number, MasterRelease>
-	>({});
-	useEffect(() => {
-		const checkClearParam = async () => {
-			const urlParams = new URLSearchParams(window.location.search);
-			if (urlParams.has("clear")) {
-				try {
-					await clearCachedMasterReleases();
-					// Remove the clear parameter from URL to avoid clearing on refresh
-					urlParams.delete("clear");
-					const newUrl =
-						window.location.pathname +
-						(urlParams.toString() ? `?${urlParams.toString()}` : "");
-					window.history.replaceState({}, "", newUrl);
-				} catch (error) {
-					console.error("Failed to clear IndexedDB cache:", error);
-				}
-			}
-		};
-
-		const loadCachedData = async () => {
-			await checkClearParam();
-			const cachedReleases = await getAllCachedMasterReleases();
-			setMasterReleases(cachedReleases);
-		};
-
-		loadCachedData();
-	}, []);
 
 	return (
 		<div className="h-screen flex flex-col">
@@ -107,7 +47,6 @@ function App() {
 							className="w-full"
 							collection={collection}
 							selectedFormat={selectedFormat}
-							masterReleases={masterReleases}
 						/>
 					</div>
 				) : (
@@ -115,7 +54,6 @@ function App() {
 						className="w-full"
 						collection={collection}
 						selectedFormat={selectedFormat}
-						masterReleases={masterReleases}
 					/>
 				)}
 			</div>

@@ -1,15 +1,15 @@
 import type { CollectionItemsResponse, ViewMode } from "@/api/types";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface TopBarProps {
 	username: string;
 	setUsername: (username: string) => void;
 	selectedFormat: string;
 	setSelectedFormat: (format: string) => void;
-	collection: CollectionItemsResponse | null;
+	collection: CollectionItemsResponse | null | undefined;
 	onLoadCollection: () => void;
 	viewMode: ViewMode;
 	setViewMode: (mode: ViewMode) => void;

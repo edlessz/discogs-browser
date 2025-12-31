@@ -2,35 +2,28 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { CollectionItemsResponse } from "../api/types";
-import type { MasterRelease } from "../api/types/database";
-import { DISCOGS_URLS, SWIPER_CONFIG } from "../constants/api";
-import { filterAndSortReleases, getFormats, getReleaseYear } from "../utils";
+import { DISCOGS_URLS, SWIPER_CONFIG } from "@/api/constants";
+import type { CollectionItemsResponse } from "@/api/types";
+import { filterAndSortReleases, getFormats } from "@/lib/utils";
 
 import "swiper/swiper-bundle.css";
 
 interface CoverflowProps {
-	collection: CollectionItemsResponse | null;
+	collection: CollectionItemsResponse | null | undefined;
 	selectedFormat: string;
-	masterReleases: Record<number, MasterRelease>;
 	className?: string;
 }
 
 export function Coverflow({
 	collection,
 	selectedFormat,
-	masterReleases,
 	className = "",
 }: CoverflowProps) {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const swiperRef = useRef<SwiperType | null>(null);
 
 	const filteredAndSortedReleases = collection
-		? filterAndSortReleases(
-				collection.releases ?? [],
-				selectedFormat,
-				masterReleases,
-			)
+		? filterAndSortReleases(collection.releases ?? [], selectedFormat)
 		: [];
 
 	const handleKeyDown = useCallback((event: KeyboardEvent) => {
@@ -132,7 +125,7 @@ export function Coverflow({
 						</p>
 						<p className="text-sm text-muted-foreground mb-4">
 							{(() => {
-								const year = getReleaseYear(currentRelease, masterReleases);
+								const year = currentRelease.basic_information.year;
 								return year === 0 ? "Unknown Year" : year;
 							})()}
 							{currentRelease.basic_information.formats && (
