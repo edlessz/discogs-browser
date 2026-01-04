@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useCollection } from "@/api/queries/useCollection";
 import { type ViewMode, ViewModes } from "@/api/types";
 import { CollectionCoverflow } from "@/components/CollectionCoverflow";
+import { db } from "@/db";
 import { type CollectionItem, filterAndSortReleases } from "@/lib/utils";
 import { CollectionTable } from "./components/CollectionTable";
 import { ModeToggle } from "./components/ModeToggle";
@@ -18,6 +19,13 @@ function App() {
 	const [viewMode, setViewMode] = useState<ViewMode>("Coverflow");
 
 	const { data, error } = useCollection(shouldFetch ? username : "", 0);
+
+	// Initialize Dexie database on mount
+	useEffect(() => {
+		db.open().catch((err) => {
+			console.error("Failed to open database:", err);
+		});
+	}, []);
 
 	useEffect(() => {
 		if (error) toast.error("Failed to load collection.");
