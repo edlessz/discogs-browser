@@ -36,7 +36,7 @@ function App() {
 				setUsername={setUsername}
 				selectedFormat={selectedFormat}
 				setSelectedFormat={setSelectedFormat}
-				collection={collection}
+				collection={data?.releases}
 				onLoadCollection={fetchCollection}
 				viewMode={viewMode}
 				setViewMode={setViewMode}

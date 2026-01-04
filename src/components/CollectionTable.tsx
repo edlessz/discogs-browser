@@ -35,7 +35,7 @@ export const CollectionTable = ({
 				header: "Title",
 			},
 			{
-				accessorFn: (release) => release.basic_information.year,
+				accessorFn: (release) => release.basic_information.year || "N/A",
 				header: "Year",
 			},
 			{
@@ -100,7 +100,7 @@ export const CollectionTable = ({
 						))
 					) : (
 						<TableRow>
-							<TableCell colSpan={columns.length} className="h-24 text-center">
+							<TableCell colSpan={columns.length} className="text-center">
 								No results.
 							</TableCell>
 						</TableRow>

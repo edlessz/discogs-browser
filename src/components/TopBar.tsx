@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { CollectionItem } from "@/lib/utils";
+import { ModeToggle } from "./ModeToggle";
 
 interface TopBarProps {
 	username: string;
@@ -94,6 +95,7 @@ export function TopBar({
 					</div>
 				))}
 			</RadioGroup>
+			<ModeToggle />
 		</div>
 	);
 }
