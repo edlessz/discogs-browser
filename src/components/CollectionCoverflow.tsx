@@ -3,28 +3,21 @@ import type { Swiper as SwiperType } from "swiper";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { DISCOGS_URLS, SWIPER_CONFIG } from "@/api/constants";
-import type { CollectionItemsResponse } from "@/api/types";
-import { filterAndSortReleases, getFormats } from "@/lib/utils";
+import { type CollectionItem, cn, getFormats } from "@/lib/utils";
 
 import "swiper/swiper-bundle.css";
 
-interface CoverflowProps {
-	collection: CollectionItemsResponse | null | undefined;
-	selectedFormat: string;
+interface CollectionCoverflowProps {
 	className?: string;
+	collection?: CollectionItem[];
 }
 
-export function Coverflow({
-	collection,
-	selectedFormat,
+export function CollectionCoverflow({
 	className = "",
-}: CoverflowProps) {
+	collection = [],
+}: CollectionCoverflowProps) {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const swiperRef = useRef<SwiperType | null>(null);
-
-	const filteredAndSortedReleases = collection
-		? filterAndSortReleases(collection.releases ?? [], selectedFormat)
-		: [];
 
 	const handleKeyDown = useCallback((event: KeyboardEvent) => {
 		if (event.key === "ArrowLeft") {
@@ -54,10 +47,10 @@ export function Coverflow({
 
 	if (!collection) return null;
 
-	const currentRelease = filteredAndSortedReleases[currentIndex];
+	const currentRelease = collection[currentIndex];
 
 	return (
-		<div className={`h-full flex flex-col ${className}`}>
+		<div className={cn(className, "h-full flex flex-col")}>
 			<div className="flex-1 flex flex-col justify-center">
 				<div>
 					<Swiper
@@ -84,7 +77,7 @@ export function Coverflow({
 						}}
 						onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
 					>
-						{filteredAndSortedReleases.map((release) => (
+						{collection.map((release) => (
 							<SwiperSlide key={release.basic_information.id}>
 								{release.basic_information.cover_image ? (
 									<img
@@ -134,7 +127,7 @@ export function Coverflow({
 						</p>
 						<div className="flex justify-center gap-4 text-sm text-muted-foreground">
 							<span>
-								{currentIndex + 1} of {filteredAndSortedReleases.length}
+								{currentIndex + 1} of {collection.length}
 							</span>
 							<span>•</span>
 							<a

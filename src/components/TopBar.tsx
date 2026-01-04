@@ -1,15 +1,16 @@
-import type { CollectionItemsResponse, ViewMode } from "@/api/types";
+import type { ViewMode } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { CollectionItem } from "@/lib/utils";
 
 interface TopBarProps {
 	username: string;
 	setUsername: (username: string) => void;
 	selectedFormat: string;
 	setSelectedFormat: (format: string) => void;
-	collection: CollectionItemsResponse | null | undefined;
+	collection?: CollectionItem[];
 	onLoadCollection: () => void;
 	viewMode: ViewMode;
 	setViewMode: (mode: ViewMode) => void;
@@ -20,15 +21,14 @@ export function TopBar({
 	setUsername,
 	selectedFormat,
 	setSelectedFormat,
-	collection,
+	collection = [],
 	onLoadCollection,
 	viewMode,
 	setViewMode,
 }: TopBarProps) {
-	const releases = collection?.releases ?? [];
 	const uniqueFormats = [
 		...new Set(
-			releases.flatMap(
+			collection.flatMap(
 				(release) =>
 					release.basic_information.formats?.map((format) => format.name) ?? [],
 			),
@@ -38,7 +38,7 @@ export function TopBar({
 		.sort();
 
 	const getFormatCount = (formatName: string) => {
-		return releases.filter((release) =>
+		return collection.filter((release) =>
 			release.basic_information.formats?.some(
 				(format) => format.name === formatName,
 			),
@@ -83,7 +83,7 @@ export function TopBar({
 			>
 				<div className="flex items-center gap-2">
 					<RadioGroupItem value="all" id="all"></RadioGroupItem>
-					<Label htmlFor="all">All ({releases.length})</Label>
+					<Label htmlFor="all">All ({collection.length})</Label>
 				</div>
 				{uniqueFormats.map((formatName) => (
 					<div key={formatName} className="flex items-center gap-2">

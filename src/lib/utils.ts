@@ -10,14 +10,14 @@ export const normalizeArtistName = (name: string): string => {
 	return name.replace(/^(The|A|An)\s+/i, "").trim();
 };
 
-export const getArtistNames = (release: ReleaseInstance): string => {
+export const getArtistNames = (release: CollectionItem): string => {
 	return release.basic_information.artists.map((x) => x.name).join(", ");
 };
 
 export const filterAndSortReleases = (
-	releases: ReleaseInstance[],
+	releases: CollectionItem[],
 	selectedFormat: string,
-): ReleaseInstance[] => {
+): CollectionItem[] => {
 	return releases
 		.filter(
 			(release) =>
@@ -51,3 +51,5 @@ export const getFormats = (release: ReleaseInstance): string => {
 		.filter((x) => x !== "All Media")
 		.join(", ");
 };
+
+export type CollectionItem = ReleaseInstance;

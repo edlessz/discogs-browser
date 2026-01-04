@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { CollectionItemsResponse } from "../types";
 import { getCollectionItemsByFolder } from "../discogs";
+import type { CollectionItemsResponse } from "../types";
 
 export function useCollection(username: string, folderId = 0) {
 	return useQuery<CollectionItemsResponse>({
