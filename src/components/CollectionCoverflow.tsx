@@ -118,8 +118,13 @@ export function CollectionCoverflow({
 						</p>
 						<p className="text-sm text-muted-foreground mb-4">
 							{(() => {
-								const year = currentRelease.basic_information.year;
-								return year === 0 ? "Unknown Year" : year;
+								if (currentRelease.master_release_year) {
+									return currentRelease.master_release_year;
+								} else if (currentRelease.basic_information.year) {
+									return `Issued ${currentRelease.basic_information.year}`;
+								} else {
+									return "Unknown Year";
+								}
 							})()}
 							{currentRelease.basic_information.formats && (
 								<span> • {getFormats(currentRelease)}</span>

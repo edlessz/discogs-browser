@@ -12,6 +12,8 @@ import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
 import { RadioGroup, RadioGroupItem } from "./components/ui/radio-group";
 
+const STORAGE_KEY = "discogs-username";
+
 function App() {
 	const [username, setUsername] = useState("");
 	const [shouldFetch, setShouldFetch] = useState(false);
@@ -20,12 +22,26 @@ function App() {
 
 	const { data, error } = useCollection(shouldFetch ? username : "", 0);
 
-	// Initialize Dexie database on mount
+	// Initialize Dexie database and load username from localStorage on mount
 	useEffect(() => {
 		db.open().catch((err) => {
 			console.error("Failed to open database:", err);
 		});
+
+		// Load username from localStorage
+		const savedUsername = localStorage.getItem(STORAGE_KEY);
+		if (savedUsername) {
+			setUsername(savedUsername);
+			setShouldFetch(true);
+		}
 	}, []);
+
+	// Save username to localStorage whenever it changes
+	useEffect(() => {
+		if (username) {
+			localStorage.setItem(STORAGE_KEY, username);
+		}
+	}, [username]);
 
 	useEffect(() => {
 		if (error) toast.error("Failed to load collection.");
@@ -43,7 +59,7 @@ function App() {
 
 	const formatFrequencies = useMemo<Record<string, number>>(() => {
 		return (
-			collection?.reduce(
+			data?.releases?.reduce(
 				(acc, release) => {
 					new Set(
 						release.basic_information.formats.map((x) => x.name),
@@ -55,7 +71,7 @@ function App() {
 				{} as Record<string, number>,
 			) ?? {}
 		);
-	}, [collection]);
+	}, [data]);
 
 	return (
 		<div className="h-screen flex flex-col">
@@ -96,7 +112,7 @@ function App() {
 				>
 					<div className="flex items-center gap-2">
 						<RadioGroupItem value="all" id="all"></RadioGroupItem>
-						<Label htmlFor="all">All ({collection?.length})</Label>
+						<Label htmlFor="all">All ({data?.releases?.length ?? 0})</Label>
 					</div>
 					{Object.entries(formatFrequencies).map(([formatName, count]) => (
 						<div key={formatName} className="flex items-center gap-2">
