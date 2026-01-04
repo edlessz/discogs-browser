@@ -52,4 +52,6 @@ export const getFormats = (release: ReleaseInstance): string => {
 		.join(", ");
 };
 
-export type CollectionItem = ReleaseInstance;
+export type CollectionItem = ReleaseInstance & {
+	master_release_year?: number;
+};

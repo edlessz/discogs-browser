@@ -3,4 +3,5 @@ export * from "./pagination";
 export * from "./release";
 export * from "./user-collection";
 
-export type ViewMode = "table" | "coverflow";
+export const ViewModes = ["Table", "Coverflow"] as const;
+export type ViewMode = (typeof ViewModes)[number];
