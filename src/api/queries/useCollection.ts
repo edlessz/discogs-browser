@@ -20,6 +20,8 @@ export function useCollection(username: string, folderId = 0) {
 
 	// Load cached master release data on mount or when collection changes
 	useEffect(() => {
+		let cancelled = false;
+
 		if (!query.data?.releases) {
 			setEnrichedReleases([]);
 			return;
@@ -47,10 +49,17 @@ export function useCollection(username: string, folderId = 0) {
 				};
 			});
 
-			setEnrichedReleases(enriched);
+			// Only update state if this effect hasn't been cancelled
+			if (!cancelled) {
+				setEnrichedReleases(enriched);
+			}
 		};
 
 		loadCachedData();
+
+		return () => {
+			cancelled = true;
+		};
 	}, [query.data]);
 
 	return {

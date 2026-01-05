@@ -24,22 +24,30 @@ function App() {
 
 	// Initialize Dexie database and load username from localStorage on mount
 	useEffect(() => {
-		db.open().catch((err) => {
-			console.error("Failed to open database:", err);
+		db.open().catch(() => {
+			toast.error("Failed to initialize local storage");
 		});
 
-		// Load username from localStorage
-		const savedUsername = localStorage.getItem(STORAGE_KEY);
-		if (savedUsername) {
-			setUsername(savedUsername);
-			setShouldFetch(true);
+		// Load username from localStorage with error handling
+		try {
+			const savedUsername = localStorage.getItem(STORAGE_KEY);
+			if (savedUsername) {
+				setUsername(savedUsername);
+				setShouldFetch(true);
+			}
+		} catch {
+			// Continue without persistence - non-critical error
 		}
 	}, []);
 
 	// Save username to localStorage whenever it changes
 	useEffect(() => {
 		if (username) {
-			localStorage.setItem(STORAGE_KEY, username);
+			try {
+				localStorage.setItem(STORAGE_KEY, username);
+			} catch {
+				// Non-critical - user can re-enter on next visit
+			}
 		}
 	}, [username]);
 

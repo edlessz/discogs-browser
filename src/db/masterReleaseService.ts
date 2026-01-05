@@ -17,8 +17,7 @@ async function get(masterId: number): Promise<MasterRelease | undefined> {
 		}
 
 		return undefined;
-	} catch (error) {
-		console.error(`Failed to get master release ${masterId}:`, error);
+	} catch {
 		return undefined;
 	}
 }
@@ -27,18 +26,13 @@ async function get(masterId: number): Promise<MasterRelease | undefined> {
  * Save a master release to cache
  */
 async function save(masterRelease: MasterRelease): Promise<void> {
-	try {
-		const now = Date.now();
-		await db.masterReleases.put({
-			id: masterRelease.id,
-			data: masterRelease,
-			cachedAt: now,
-			lastAccessedAt: now,
-		});
-	} catch (error) {
-		console.error(`Failed to save master release ${masterRelease.id}:`, error);
-		throw error;
-	}
+	const now = Date.now();
+	await db.masterReleases.put({
+		id: masterRelease.id,
+		data: masterRelease,
+		cachedAt: now,
+		lastAccessedAt: now,
+	});
 }
 
 /**
@@ -70,8 +64,7 @@ async function getMany(
 		}
 
 		return result;
-	} catch (error) {
-		console.error("Failed to get multiple master releases:", error);
+	} catch {
 		return new Map();
 	}
 }
@@ -83,8 +76,7 @@ async function has(masterId: number): Promise<boolean> {
 	try {
 		const count = await db.masterReleases.where("id").equals(masterId).count();
 		return count > 0;
-	} catch (error) {
-		console.error(`Failed to check master release ${masterId}:`, error);
+	} catch {
 		return false;
 	}
 }
@@ -97,8 +89,7 @@ async function clearOldEntries(daysOld = 90): Promise<number> {
 	try {
 		const cutoffTime = Date.now() - daysOld * 24 * 60 * 60 * 1000;
 		return await db.masterReleases.where("cachedAt").below(cutoffTime).delete();
-	} catch (error) {
-		console.error("Failed to clear old cache entries:", error);
+	} catch {
 		return 0;
 	}
 }
@@ -120,8 +111,7 @@ async function getStats() {
 			oldestCacheDate: oldestEntry?.cachedAt,
 			newestCacheDate: newestEntry?.cachedAt,
 		};
-	} catch (error) {
-		console.error("Failed to get cache stats:", error);
+	} catch {
 		return null;
 	}
 }

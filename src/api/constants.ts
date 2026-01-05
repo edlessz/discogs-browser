@@ -10,11 +10,6 @@ export const DISCOGS_URLS = {
 	RELEASE: "https://www.discogs.com/release/",
 } as const;
 
-export const TOAST_CONFIG = {
-	DEFAULT_DURATION: 5000,
-	ANIMATION_DURATION: 300,
-} as const;
-
 export const SWIPER_CONFIG = {
 	SLIDES_PER_VIEW: 5,
 	ROTATE: 30,

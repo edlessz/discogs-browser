@@ -52,9 +52,5 @@ export function useFetchMasterRelease() {
 				},
 			);
 		},
-
-		onError: (error: Error) => {
-			console.error("Failed to fetch master release:", error);
-		},
 	});
 }

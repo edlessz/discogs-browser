@@ -35,11 +35,15 @@ export const getCollectionItemsByFolder = async (
 	}
 
 	// Return the combined results with updated pagination info
+	if (!lastResponse) {
+		throw new Error("No response received from API");
+	}
+
 	return {
-		...(lastResponse as CollectionItemsResponse),
+		...lastResponse,
 		releases: allReleases,
 		pagination: {
-			...(lastResponse?.pagination ?? {}),
+			...lastResponse.pagination,
 			items: allReleases.length,
 			page: 1,
 			pages: 1,
