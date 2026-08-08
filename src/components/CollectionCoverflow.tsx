@@ -1,3 +1,4 @@
+import { ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
@@ -124,21 +125,33 @@ export function CollectionCoverflow({
 								<span> • {getFormats(currentRelease)}</span>
 							)}
 						</p>
-						<div className="flex justify-center gap-4 text-sm text-muted-foreground">
+						<div className="flex justify-center gap-2 text-sm text-muted-foreground">
 							<span>
 								{currentIndex + 1} of {collection.length}
 							</span>
+							{currentRelease.basic_information.master_id !== 0 && (
+								<>
+									<span>•</span>
+									<a
+										href={`${DISCOGS_URLS.MASTER}${currentRelease.basic_information.master_id}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="inline-flex items-center gap-1 underline decoration-muted-foreground/40 underline-offset-4 hover:decoration-foreground"
+									>
+										View Master
+										<ExternalLink className="size-3.5" />
+									</a>
+								</>
+							)}
 							<span>•</span>
 							<a
-								href={
-									currentRelease.basic_information.master_id !== 0
-										? `${DISCOGS_URLS.MASTER}${currentRelease.basic_information.master_id}`
-										: `${DISCOGS_URLS.RELEASE}${currentRelease.basic_information.id}`
-								}
+								href={`${DISCOGS_URLS.RELEASE}${currentRelease.basic_information.id}`}
 								target="_blank"
 								rel="noopener noreferrer"
+								className="inline-flex items-center gap-1 underline decoration-muted-foreground/40 underline-offset-4 hover:decoration-foreground"
 							>
-								View on Discogs
+								View Release
+								<ExternalLink className="size-3.5" />
 							</a>
 						</div>
 					</div>
