@@ -15,7 +15,7 @@ The official Discogs website doesn't support sorting collections the way I wante
 - **Smart Caching**
   - Two-tier caching strategy (React Query + IndexedDB)
   - Persistent master release data across sessions
-  - Automatic background enrichment with release years
+  - Automatic enrichment from cached data on load
 
 - **Rich Filtering**
   - Filter by format (Vinyl, CD, Cassette, etc.)
@@ -24,7 +24,7 @@ The official Discogs website doesn't support sorting collections the way I wante
 
 - **Rate Limit Protection**
   - Built-in request queue to prevent API throttling
-  - Automatic retry and throttling management
+  - Automatic pause/resume based on Discogs rate limit headers
 
 - **Modern UX**
   - Dark/Light theme support
@@ -35,9 +35,11 @@ The official Discogs website doesn't support sorting collections the way I wante
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript
-- **Build Tool**: Vite 7 with SWC
+- **Build Tool**: Vite 8 with SWC
 - **Styling**: Tailwind CSS 4 + shadcn/ui
 - **State Management**: TanStack Query (React Query)
+- **Table**: TanStack Table
+- **Carousel**: Swiper
 - **Database**: Dexie (IndexedDB wrapper)
 - **UI Components**: Radix UI primitives
 - **Code Quality**: Biome (linter + formatter)
@@ -65,6 +67,15 @@ bun dev
 
 4. Open [http://localhost:5173](http://localhost:5173) in your browser
 
+### Other Scripts
+
+```bash
+bun build       # Typecheck (tsc -b) + production build
+bun lint        # Biome check (lint + format)
+bun lint:fix    # Biome check with auto-fix
+bun preview     # Preview the production build
+```
+
 ## Usage
 
 1. **Enter Username**: Type your Discogs username in the input field
@@ -79,21 +90,23 @@ bun dev
 ```
 src/
 ├── api/
-│   ├── queries/          # React Query hooks
+│   ├── queries/          # React Query hooks (useCollection, useMasterRelease)
 │   ├── types/            # TypeScript type definitions
 │   ├── constants.ts      # API configuration
-│   ├── discogs.ts        # API methods
+│   ├── discogs.ts        # API methods (auto-paginates collection folders)
 │   └── discogsClient.ts  # Axios client with rate limiting
 ├── components/
 │   ├── ui/               # shadcn/ui components
 │   ├── CollectionTable.tsx
 │   ├── CollectionCoverflow.tsx
-│   └── ModeToggle.tsx
+│   └── ModeToggle.tsx    # ThemeProvider + dark/light toggle
 ├── db/
+│   ├── index.ts          # Barrel exports
 │   ├── schema.ts         # Dexie database schema
 │   └── masterReleaseService.ts
 ├── lib/
-│   └── utils.ts          # Utility functions
+│   └── utils.ts          # Utility functions (cn, filtering/sorting)
+├── main.tsx              # Entry point
 └── App.tsx               # Main application component
 ```
 
@@ -110,9 +123,9 @@ The app includes automatic rate limit protection. Configuration is in [src/api/d
 ### Caching Strategy
 
 Master release data is cached in IndexedDB with:
-- 90-day default retention
 - Last accessed tracking
-- Bulk retrieval optimization
+- Bulk retrieval optimization (cached years are merged into the collection on load)
+- Manual cleanup utility available via `masterReleaseService.clearOldEntries()` (defaults to 90 days; not run automatically)
 
 ## Known Limitations
 
