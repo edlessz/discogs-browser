@@ -88,12 +88,15 @@ export const CollectionTable = ({
 	return (
 		<div className={cn(className, "overflow-auto")}>
 			<Table>
-				<TableHeader className="sticky top-0 bg-background z-10">
+				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => {
 								return (
-									<TableHead key={header.id}>
+									<TableHead
+										key={header.id}
+										className="sticky top-0 bg-background z-10"
+									>
 										{header.isPlaceholder ? null : header.column.getCanSort() ? (
 											<button
 												type="button"
