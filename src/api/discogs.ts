@@ -2,7 +2,6 @@ import client from "./discogsClient";
 import type {
 	CollectionFoldersResponse,
 	CollectionItemsResponse,
-	MasterRelease,
 } from "./types";
 
 export const getCollectionFolders = async (username: string) => {
@@ -51,9 +50,4 @@ export const getCollectionItemsByFolder = async (
 			per_page: allReleases.length,
 		},
 	};
-};
-
-export const getMasterRelease = async (masterId: number) => {
-	const res = await client.get<MasterRelease>(`/masters/${masterId}`);
-	return res.data;
 };

@@ -4,18 +4,13 @@ A modern, fast web application for browsing and exploring your Discogs record co
 
 ## Why This Project?
 
-The official Discogs website doesn't support sorting collections the way I wanted to organize mine - by artist first, then by master release year. So I built my own collection visualizer that gives me complete control over how I view and sort my records. This tool lets you sort your collection exactly how you want it, with a beautiful interface and smart caching to make browsing fast and enjoyable.
+The official Discogs website doesn't support sorting collections the way I wanted to organize mine - by artist first, then by release year. So I built my own collection visualizer that gives me complete control over how I view and sort my records. This tool lets you sort your collection exactly how you want it, with a beautiful interface.
 
 ## Features
 
 - **Dual View Modes**
-  - **Table View**: Sortable columns with master release data fetching
+  - **Table View**: Sortable columns
   - **Coverflow View**: Beautiful 3D carousel with keyboard and mouse wheel navigation
-
-- **Smart Caching**
-  - Two-tier caching strategy (React Query + IndexedDB)
-  - Persistent master release data across sessions
-  - Automatic enrichment from cached data on load
 
 - **Rich Filtering**
   - Filter by format (Vinyl, CD, Cassette, etc.)
@@ -40,7 +35,6 @@ The official Discogs website doesn't support sorting collections the way I wante
 - **State Management**: TanStack Query (React Query)
 - **Table**: TanStack Table
 - **Carousel**: Swiper
-- **Database**: Dexie (IndexedDB wrapper)
 - **UI Components**: Radix UI primitives
 - **Code Quality**: Biome (linter + formatter)
 
@@ -82,15 +76,14 @@ bun preview     # Preview the production build
 2. **Load Collection**: Click "Load Collection" or press Enter
 3. **Switch Views**: Toggle between Table and Coverflow views using the radio buttons
 4. **Filter by Format**: Select a format to view only releases in that format
-5. **Fetch Master Data**: In Table view, click the download icon to fetch master release year
-6. **Navigate Coverflow**: Use arrow keys, mouse wheel, or navigation buttons
+5. **Navigate Coverflow**: Use arrow keys, mouse wheel, or navigation buttons
 
 ## Project Structure
 
 ```
 src/
 ├── api/
-│   ├── queries/          # React Query hooks (useCollection, useMasterRelease)
+│   ├── queries/          # React Query hooks (useCollection)
 │   ├── types/            # TypeScript type definitions
 │   ├── constants.ts      # API configuration
 │   ├── discogs.ts        # API methods (auto-paginates collection folders)
@@ -100,10 +93,6 @@ src/
 │   ├── CollectionTable.tsx
 │   ├── CollectionCoverflow.tsx
 │   └── ModeToggle.tsx    # ThemeProvider + dark/light toggle
-├── db/
-│   ├── index.ts          # Barrel exports
-│   ├── schema.ts         # Dexie database schema
-│   └── masterReleaseService.ts
 ├── lib/
 │   └── utils.ts          # Utility functions (cn, filtering/sorting)
 ├── main.tsx              # Entry point
@@ -120,18 +109,10 @@ The app includes automatic rate limit protection. Configuration is in [src/api/d
 - 2-second throttle delay
 - Automatic queue processing
 
-### Caching Strategy
-
-Master release data is cached in IndexedDB with:
-- Last accessed tracking
-- Bulk retrieval optimization (cached years are merged into the collection on load)
-- Manual cleanup utility available via `masterReleaseService.clearOldEntries()` (defaults to 90 days; not run automatically)
-
 ## Known Limitations
 
 - Public API access only (no authentication required, but rate limited)
 - Fetches all pages automatically (may be slow for large collections)
-- Master release fetching is manual (click download icon in Table view)
 
 ## Contributing
 

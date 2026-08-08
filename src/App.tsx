@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { useCollection } from "@/api/queries/useCollection";
 import { type ViewMode, ViewModes } from "@/api/types";
 import { CollectionCoverflow } from "@/components/CollectionCoverflow";
-import { db } from "@/db";
 import { type CollectionItem, filterAndSortReleases } from "@/lib/utils";
 import { CollectionTable } from "./components/CollectionTable";
 import { ModeToggle } from "./components/ModeToggle";
@@ -22,13 +21,8 @@ function App() {
 
 	const { data, error } = useCollection(shouldFetch ? username : "", 0);
 
-	// Initialize Dexie database and load username from localStorage on mount
+	// Load username from localStorage on mount
 	useEffect(() => {
-		db.open().catch(() => {
-			toast.error("Failed to initialize local storage");
-		});
-
-		// Load username from localStorage with error handling
 		try {
 			const savedUsername = localStorage.getItem(STORAGE_KEY);
 			if (savedUsername) {

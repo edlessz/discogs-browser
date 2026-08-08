@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Discogs collection browser: Vite + React 19 + TypeScript SPA, Tailwind CSS 4, shadcn/ui, TanStack Query, Dexie (IndexedDB). Single package, no monorepo, no tests, no CI.
+Discogs collection browser: Vite + React 19 + TypeScript SPA, Tailwind CSS 4, shadcn/ui, TanStack Query. Single package, no monorepo, no tests, no CI.
 
 ## Commands
 
@@ -22,8 +22,5 @@ Discogs collection browser: Vite + React 19 + TypeScript SPA, Tailwind CSS 4, sh
 - Entry: `src/main.tsx` → `src/App.tsx`. Data flows through React Query hooks in `src/api/queries/`.
 - **All Discogs API calls must go through `src/api/discogsClient.ts`** (never raw axios/fetch): it implements a request queue that pauses when `x-discogs-ratelimit-remaining` drops to 2 (see thresholds in `src/api/constants.ts`). There is no retry logic — errors are just rejected.
 - `getCollectionItemsByFolder` (`src/api/discogs.ts`) auto-paginates and returns all pages of a folder at once — expect slow loads for large collections.
-- Two-tier caching for master releases: `useCollection` bulk-merges cached years from Dexie on load; `useFetchMasterRelease` (mutation) checks Dexie → calls API → saves to Dexie → patches the `["collection"]` React Query cache. Per-row fetch in Table view is manual.
-- `src/db/index.ts` is a barrel; import `db` / `masterReleaseService` from `@/db`. If you change the Dexie schema (`src/db/schema.ts`), add a new `this.version(n)` block — don't edit the existing one.
-- `masterReleaseService.clearOldEntries()` / `getStats()` exist but are never called — cache cleanup is manual, not automatic.
 - `ThemeProvider` (wrapping `next-themes`) lives in `src/components/ModeToggle.tsx`, not a separate provider file.
 - No auth/env vars: Discogs public API only, no `.env` setup needed.

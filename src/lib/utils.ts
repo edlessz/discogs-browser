@@ -30,8 +30,8 @@ export const filterAndSortReleases = (
 			const artistA = normalizeArtistName(getArtistNames(a));
 			const artistB = normalizeArtistName(getArtistNames(b));
 
-			const yearA = a.master_release_year ?? a.basic_information.year;
-			const yearB = b.master_release_year ?? b.basic_information.year;
+			const yearA = a.basic_information.year;
+			const yearB = b.basic_information.year;
 
 			const artistComparison = artistA.localeCompare(artistB);
 			if (artistComparison !== 0) {
@@ -52,6 +52,4 @@ export const getFormats = (release: CollectionItem): string => {
 		.join(", ");
 };
 
-export type CollectionItem = ReleaseInstance & {
-	master_release_year?: number;
-};
+export type CollectionItem = ReleaseInstance;
