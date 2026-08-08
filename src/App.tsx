@@ -77,7 +77,7 @@ function App() {
 
 	return (
 		<div className="h-screen flex flex-col">
-			<div className="flex gap-2 items-center justify-between p-4">
+			<div className="flex gap-2 items-center p-4 justify-between">
 				<div className="flex gap-2 items-center">
 					<Input
 						type="text"
@@ -95,39 +95,43 @@ function App() {
 						Load Collection
 					</Button>
 				</div>
-				<RadioGroup
-					className="flex"
-					onValueChange={(e) => setViewMode(e as ViewMode)}
-					value={viewMode}
-				>
-					{ViewModes.map((mode) => (
-						<div key={mode} className="flex items-center gap-2">
-							<RadioGroupItem value={mode} id={mode}></RadioGroupItem>
-							<Label htmlFor={mode}>{mode}</Label>
+				<div>
+					<RadioGroup
+						className="flex"
+						onValueChange={(e) => setViewMode(e as ViewMode)}
+						value={viewMode}
+					>
+						{ViewModes.map((mode) => (
+							<div key={mode} className="flex items-center gap-2">
+								<RadioGroupItem value={mode} id={mode}></RadioGroupItem>
+								<Label htmlFor={mode}>{mode}</Label>
+							</div>
+						))}
+					</RadioGroup>
+				</div>
+				<div>
+					<RadioGroup
+						className="flex"
+						onValueChange={(e) => setSelectedFormat(e)}
+						value={selectedFormat}
+					>
+						<div className="flex items-center gap-2">
+							<RadioGroupItem value="all" id="all"></RadioGroupItem>
+							<Label htmlFor="all">All ({data?.releases?.length ?? 0})</Label>
 						</div>
-					))}
-				</RadioGroup>
-				<RadioGroup
-					className="flex"
-					onValueChange={(e) => setSelectedFormat(e)}
-					value={selectedFormat}
-				>
-					<div className="flex items-center gap-2">
-						<RadioGroupItem value="all" id="all"></RadioGroupItem>
-						<Label htmlFor="all">All ({data?.releases?.length ?? 0})</Label>
-					</div>
-					{Object.entries(formatFrequencies).map(([formatName, count]) => (
-						<div key={formatName} className="flex items-center gap-2">
-							<RadioGroupItem
-								value={formatName}
-								id={formatName}
-							></RadioGroupItem>
-							<Label htmlFor={formatName}>
-								{formatName} ({count})
-							</Label>
-						</div>
-					))}
-				</RadioGroup>
+						{Object.entries(formatFrequencies).map(([formatName, count]) => (
+							<div key={formatName} className="flex items-center gap-2">
+								<RadioGroupItem
+									value={formatName}
+									id={formatName}
+								></RadioGroupItem>
+								<Label htmlFor={formatName}>
+									{formatName} ({count})
+								</Label>
+							</div>
+						))}
+					</RadioGroup>
+				</div>
 				<ModeToggle />
 			</div>
 			{viewMode === "Table" ? (
