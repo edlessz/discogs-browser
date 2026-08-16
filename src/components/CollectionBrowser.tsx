@@ -7,7 +7,17 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { config } from "@/config";
 import { type CollectionItem, filterAndSortReleases } from "@/lib/utils";
 
-export function CollectionBrowser() {
+interface CollectionBrowserProps {
+	/** Coverflow slide to open on (restored when returning to this view) */
+	initialIndex?: number;
+	/** Reports the current coverflow slide so it survives view switches */
+	onIndexChange?: (index: number) => void;
+}
+
+export function CollectionBrowser({
+	initialIndex = 0,
+	onIndexChange,
+}: CollectionBrowserProps) {
 	const [selectedFormat, setSelectedFormat] = useState<string>("all");
 
 	const username = config.discogsUsername;
@@ -75,7 +85,12 @@ export function CollectionBrowser() {
 					))}
 				</RadioGroup>
 			</div>
-			<CollectionCoverflow className="w-full flex-1" collection={collection} />
+			<CollectionCoverflow
+				className="w-full flex-1"
+				collection={collection}
+				initialIndex={initialIndex}
+				onIndexChange={onIndexChange}
+			/>
 		</div>
 	);
 }

@@ -11,14 +11,27 @@ import "swiper/swiper-bundle.css";
 interface CollectionCoverflowProps {
 	className?: string;
 	collection?: CollectionItem[];
+	/** Slide to open on (only applied at Swiper init / when slides first arrive) */
+	initialIndex?: number;
+	/** Reports slide changes so position can be restored on remount */
+	onIndexChange?: (index: number) => void;
 }
 
 export function CollectionCoverflow({
 	className = "",
 	collection = [],
+	initialIndex = 0,
+	onIndexChange,
 }: CollectionCoverflowProps) {
-	const [currentIndex, setCurrentIndex] = useState(0);
+	const [currentIndex, setCurrentIndex] = useState(initialIndex);
 	const swiperRef = useRef<SwiperType | null>(null);
+
+	// If Swiper initialized before slides existed (data still loading),
+	// jump to the restored index once they arrive.
+	const hasSlides = collection.length > 0;
+	useEffect(() => {
+		if (hasSlides) swiperRef.current?.slideTo(initialIndex, 0);
+	}, [hasSlides, initialIndex]);
 
 	const handleKeyDown = useCallback((event: KeyboardEvent) => {
 		if (event.key === "ArrowLeft") {
@@ -73,10 +86,14 @@ export function CollectionCoverflow({
 						navigation={true}
 						modules={[EffectCoverflow, Pagination, Navigation]}
 						className="h-half"
+						initialSlide={initialIndex}
 						onSwiper={(swiper) => {
 							swiperRef.current = swiper;
 						}}
-						onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
+						onSlideChange={(swiper) => {
+							setCurrentIndex(swiper.activeIndex);
+							onIndexChange?.(swiper.activeIndex);
+						}}
 					>
 						{collection.map((release) => (
 							<SwiperSlide key={release.basic_information.id}>

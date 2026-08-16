@@ -1,10 +1,11 @@
 import { AudioLines, Disc3, Image, ImageOff } from "lucide-react";
 import { lazy, Suspense, useEffect, useState } from "react";
+import { useCollection } from "@/api/queries/useCollection";
 import { useNowPlaying } from "@/api/queries/useNowPlaying";
 import { ModeToggle } from "@/components/ModeToggle";
 import { NowPlaying } from "@/components/NowPlaying";
 import { Button } from "@/components/ui/button";
-import { missingConfigKeys } from "@/config";
+import { config, missingConfigKeys } from "@/config";
 
 // Lazy-loaded: keeps Swiper/TanStack Table out of the kiosk home view
 const CollectionBrowser = lazy(() =>
@@ -49,8 +50,14 @@ function MissingConfig({ missing }: { missing: string[] }) {
 function App() {
 	const [view, setView] = useState<View>("now-playing");
 	const [showBackdrop, setShowBackdrop] = useState(readBackdropPreference);
+	// Survives view switches so the collection reopens where you left it
+	const [collectionIndex, setCollectionIndex] = useState(0);
 	const missing = missingConfigKeys();
 	const { data, isLoading, isError } = useNowPlaying(missing.length === 0);
+
+	// Eager: start the (slow, auto-paginating) collection fetch on page load.
+	// Same query key as the collection view -> one fetch, shared cache.
+	useCollection(config.discogsUsername, 0);
 
 	useEffect(() => {
 		try {
@@ -76,7 +83,10 @@ function App() {
 					/>
 				) : (
 					<Suspense fallback={null}>
-						<CollectionBrowser />
+						<CollectionBrowser
+							initialIndex={collectionIndex}
+							onIndexChange={setCollectionIndex}
+						/>
 					</Suspense>
 				)}
 			</div>
