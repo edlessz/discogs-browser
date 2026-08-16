@@ -58,12 +58,12 @@ export function NowPlaying({
 		return (
 			<div
 				className={cn(
-					"h-full flex flex-col items-center justify-center gap-8 p-6",
+					"h-full flex flex-col landscape:flex-row items-center justify-center gap-8 landscape:gap-12 p-6",
 					className,
 				)}
 			>
-				<div className="size-[min(50dvh,75vw)] rounded-2xl bg-muted animate-pulse" />
-				<div className="flex flex-col items-center gap-3">
+				<div className="size-[min(45dvh,75vw)] landscape:size-[min(70dvh,45vw)] rounded-2xl bg-muted animate-pulse" />
+				<div className="flex flex-col items-center landscape:items-start gap-3">
 					<div className="h-8 w-64 max-w-[80vw] rounded bg-muted animate-pulse" />
 					<div className="h-6 w-40 max-w-[60vw] rounded bg-muted animate-pulse" />
 				</div>
@@ -90,71 +90,86 @@ export function NowPlaying({
 	}
 
 	return (
-		<div
-			className={cn(
-				"h-full flex flex-col items-center justify-center gap-6 p-6 text-center select-none",
-				className,
-			)}
-		>
-			{/* Album art */}
-			<div className="size-[min(50dvh,75vw)] shrink-0">
-				{artSrc ? (
+		<div className={cn("relative h-full overflow-hidden", className)}>
+			{/* Ambient backdrop: the artwork itself, upscaled by the browser (no
+			    CSS blur filter — too heavy for weak kiosk GPUs) + a theme-aware
+			    scrim for text legibility. Same URL as the main art = cached. */}
+			{artSrc && (
+				<div className="absolute inset-0" aria-hidden>
 					<img
-						key={artSrc}
+						key={`backdrop-${artSrc}`}
 						src={artSrc}
-						alt={track.album ? `${track.album} artwork` : "Artwork"}
-						onError={() => setArtIndex((i) => i + 1)}
-						className="size-full rounded-2xl object-cover shadow-2xl animate-in fade-in duration-500"
+						alt=""
+						className="size-full object-cover scale-110 animate-in fade-in duration-700"
 					/>
-				) : (
-					<div className="size-full rounded-2xl bg-muted flex items-center justify-center shadow-2xl">
-						<Music className="size-1/3 text-muted-foreground" />
+					<div className="absolute inset-0 bg-background/80" />
+				</div>
+			)}
+
+			{/* Side-by-side on landscape kiosk screens (1280x800), stacked in portrait */}
+			<div className="relative h-full flex flex-col landscape:flex-row items-center justify-center gap-6 landscape:gap-12 p-6 text-center landscape:text-left select-none">
+				{/* Album art */}
+				<div className="size-[min(45dvh,75vw)] landscape:size-[min(70dvh,45vw)] shrink-0">
+					{artSrc ? (
+						<img
+							key={artSrc}
+							src={artSrc}
+							alt={track.album ? `${track.album} artwork` : "Artwork"}
+							onError={() => setArtIndex((i) => i + 1)}
+							className="size-full rounded-2xl object-cover shadow-2xl animate-in fade-in duration-500"
+						/>
+					) : (
+						<div className="size-full rounded-2xl bg-muted flex items-center justify-center shadow-2xl">
+							<Music className="size-1/3 text-muted-foreground" />
+						</div>
+					)}
+				</div>
+
+				<div className="flex flex-col items-center landscape:items-start gap-4 landscape:gap-5 min-w-0 max-w-[90vw] landscape:max-w-xl">
+					{/* Status */}
+					<div className="flex items-center gap-2 text-sm landscape:text-base font-medium tracking-wide uppercase">
+						{track.isNowPlaying ? (
+							<>
+								<span className="relative flex size-2.5 landscape:size-3">
+									<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+									<span className="relative inline-flex rounded-full size-2.5 landscape:size-3 bg-emerald-500" />
+								</span>
+								<span className="text-emerald-500">Now playing</span>
+							</>
+						) : (
+							<span className="text-muted-foreground">
+								Last played
+								{track.playedAt
+									? ` · ${formatRelativeTime(track.playedAt, now)}`
+									: ""}
+							</span>
+						)}
+						{track.loved && (
+							<Heart
+								className="size-4 landscape:size-5 fill-red-500 text-red-500"
+								aria-label="Loved track"
+							/>
+						)}
+						{isError && (
+							<span className="text-muted-foreground">· connection issues</span>
+						)}
 					</div>
-				)}
-			</div>
 
-			{/* Status */}
-			<div className="flex items-center gap-2 text-sm font-medium tracking-wide uppercase">
-				{track.isNowPlaying ? (
-					<>
-						<span className="relative flex size-2.5">
-							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-							<span className="relative inline-flex rounded-full size-2.5 bg-emerald-500" />
-						</span>
-						<span className="text-emerald-500">Now playing</span>
-					</>
-				) : (
-					<span className="text-muted-foreground">
-						Last played
-						{track.playedAt
-							? ` · ${formatRelativeTime(track.playedAt, now)}`
-							: ""}
-					</span>
-				)}
-				{track.loved && (
-					<Heart
-						className="size-4 fill-red-500 text-red-500"
-						aria-label="Loved track"
-					/>
-				)}
-				{isError && (
-					<span className="text-muted-foreground">· connection issues</span>
-				)}
-			</div>
-
-			{/* Track info */}
-			<div className="flex flex-col items-center gap-1 max-w-[90vw]">
-				<h1 className="text-3xl md:text-4xl font-bold leading-tight line-clamp-2">
-					{track.track}
-				</h1>
-				<p className="text-xl md:text-2xl text-muted-foreground line-clamp-1">
-					{track.artist}
-				</p>
-				{track.album && (
-					<p className="text-sm md:text-base text-muted-foreground/80 line-clamp-1">
-						{track.album}
-					</p>
-				)}
+					{/* Track info */}
+					<div className="flex flex-col items-center landscape:items-start gap-1 landscape:gap-2 min-w-0">
+						<h1 className="text-3xl landscape:text-5xl font-bold leading-tight line-clamp-2">
+							{track.track}
+						</h1>
+						<p className="text-xl landscape:text-3xl text-muted-foreground line-clamp-1">
+							{track.artist}
+						</p>
+						{track.album && (
+							<p className="text-sm landscape:text-lg text-muted-foreground/80 line-clamp-1">
+								{track.album}
+							</p>
+						)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);
