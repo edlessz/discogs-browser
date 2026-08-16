@@ -71,6 +71,11 @@ export interface NowPlayingTrack {
 	 * then Last.fm's own images descending). May be empty.
 	 */
 	artworkCandidates: string[];
+	/**
+	 * Fast-loading Last.fm image to show instantly while the hi-res
+	 * candidates load; the hi-res layer fades in over it. Empty if none.
+	 */
+	instantArtUrl: string;
 	isNowPlaying: boolean;
 	loved: boolean;
 	/** Unix seconds; undefined while the track is still playing */

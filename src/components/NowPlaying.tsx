@@ -42,20 +42,30 @@ export function NowPlaying({
 }: NowPlayingProps) {
 	const now = useNow();
 	const [artIndex, setArtIndex] = useState(0);
+	const [loadedArt, setLoadedArt] = useState<string | null>(null);
+	const [instantFailed, setInstantFailed] = useState(false);
 
-	// Restart the artwork fallback chain when the track changes
+	// Restart the artwork chain when the track changes
 	// (render-time state adjustment, no effect needed)
 	const trackKey = track ? `${track.artist}—${track.track}` : "";
 	const [prevTrackKey, setPrevTrackKey] = useState(trackKey);
 	if (prevTrackKey !== trackKey) {
 		setPrevTrackKey(trackKey);
 		setArtIndex(0);
+		setLoadedArt(null);
+		setInstantFailed(false);
 	}
 
+	// Hi-res candidate currently being attempted (walks on error)
 	const artSrc =
 		track && artIndex < track.artworkCandidates.length
 			? track.artworkCandidates[artIndex]
 			: undefined;
+	// Fast Last.fm image shown instantly underneath while hi-res loads
+	const instantSrc =
+		!instantFailed && track?.instantArtUrl ? track.instantArtUrl : undefined;
+	// Whatever is actually on screen right now (drives the backdrop too)
+	const displayedArt = loadedArt ?? instantSrc;
 
 	if (isLoading) {
 		return (
@@ -94,14 +104,14 @@ export function NowPlaying({
 
 	return (
 		<div className={cn("relative h-full overflow-hidden", className)}>
-			{/* Ambient backdrop: the artwork itself, upscaled by the browser (no
+			{/* Ambient backdrop: the displayed artwork, upscaled by the browser (no
 			    CSS blur filter — too heavy for weak kiosk GPUs) + a theme-aware
-			    scrim for text legibility. Same URL as the main art = cached. */}
-			{showBackdrop && artSrc && (
+			    scrim for text legibility. Follows the instant -> hi-res upgrade. */}
+			{showBackdrop && displayedArt && (
 				<div className="absolute inset-0" aria-hidden>
 					<img
-						key={`backdrop-${artSrc}`}
-						src={artSrc}
+						key={`backdrop-${displayedArt}`}
+						src={displayedArt}
 						alt=""
 						className="size-full object-cover scale-110 animate-in fade-in duration-700"
 					/>
@@ -111,20 +121,33 @@ export function NowPlaying({
 
 			{/* Side-by-side on landscape kiosk screens (1280x800), stacked in portrait */}
 			<div className="relative h-full flex flex-col landscape:flex-row items-center justify-center gap-6 landscape:gap-12 p-6 text-center landscape:text-left select-none">
-				{/* Album art */}
-				<div className="size-[min(45dvh,75vw)] landscape:size-[min(70dvh,45vw)] shrink-0">
-					{artSrc ? (
+				{/* Album art: stacked layers — placeholder, instant Last.fm image,
+				    then the hi-res candidate fading in once fully loaded */}
+				<div className="relative size-[min(45dvh,75vw)] landscape:size-[min(70dvh,45vw)] shrink-0 rounded-2xl shadow-2xl">
+					<div className="absolute inset-0 rounded-2xl bg-muted flex items-center justify-center">
+						<Music className="size-1/3 text-muted-foreground" />
+					</div>
+					{instantSrc && (
+						<img
+							src={instantSrc}
+							alt=""
+							aria-hidden
+							onError={() => setInstantFailed(true)}
+							className="absolute inset-0 size-full rounded-2xl object-cover"
+						/>
+					)}
+					{artSrc && (
 						<img
 							key={artSrc}
 							src={artSrc}
 							alt={track.album ? `${track.album} artwork` : "Artwork"}
+							onLoad={() => setLoadedArt(artSrc)}
 							onError={() => setArtIndex((i) => i + 1)}
-							className="size-full rounded-2xl object-cover shadow-2xl animate-in fade-in duration-500"
+							className={cn(
+								"absolute inset-0 size-full rounded-2xl object-cover transition-opacity duration-700",
+								loadedArt === artSrc ? "opacity-100" : "opacity-0",
+							)}
 						/>
-					) : (
-						<div className="size-full rounded-2xl bg-muted flex items-center justify-center shadow-2xl">
-							<Music className="size-1/3 text-muted-foreground" />
-						</div>
 					)}
 				</div>
 

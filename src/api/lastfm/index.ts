@@ -1,5 +1,5 @@
 import { config } from "@/config";
-import { buildArtworkCandidates } from "../artwork";
+import { resolveArtwork } from "../artwork";
 import client from "./client";
 import type {
 	LastfmRecentTrack,
@@ -9,21 +9,25 @@ import type {
 
 const normalize = async (
 	track: LastfmRecentTrack,
-): Promise<NowPlayingTrack> => ({
-	track: track.name,
-	artist: track.artist.name,
-	album: track.album["#text"],
-	albumMbid: track.album.mbid,
-	artworkCandidates: await buildArtworkCandidates({
+): Promise<NowPlayingTrack> => {
+	const artwork = await resolveArtwork({
 		albumMbid: track.album.mbid,
 		trackImages: track.image,
 		artistImages: track.artist.image,
-	}),
-	isNowPlaying: track["@attr"]?.nowplaying === "true",
-	loved: track.loved === "1",
-	playedAt: track.date ? Number.parseInt(track.date.uts, 10) : undefined,
-	url: track.url,
-});
+	});
+	return {
+		track: track.name,
+		artist: track.artist.name,
+		album: track.album["#text"],
+		albumMbid: track.album.mbid,
+		artworkCandidates: artwork.candidates,
+		instantArtUrl: artwork.instant,
+		isNowPlaying: track["@attr"]?.nowplaying === "true",
+		loved: track.loved === "1",
+		playedAt: track.date ? Number.parseInt(track.date.uts, 10) : undefined,
+		url: track.url,
+	};
+};
 
 /**
  * Fetches the user's most recent track. The first entry is the currently

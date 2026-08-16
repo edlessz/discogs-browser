@@ -72,15 +72,22 @@ const upsizeLastfmUrl = (url: string, size: string): string | null => {
 	return upsized !== url ? upsized : null;
 };
 
+/** The best image the API reports, at its documented (fast) size. */
+const bestPlainUrl = (images: LastfmImage[] | undefined): string | null => {
+	for (const size of IMAGE_SIZE_PRIORITY) {
+		const url = images?.find((img) => img.size === size)?.["#text"];
+		if (url) return url;
+	}
+	return null;
+};
+
 /**
  * Last.fm art chain: the best image the API reports, upsized to the CDN's
  * max first, then remaining documented sizes descending.
  */
 const lastfmImageChain = (images: LastfmImage[] | undefined): string[] => {
 	const urls: string[] = [];
-	const best = IMAGE_SIZE_PRIORITY.map(
-		(size) => images?.find((img) => img.size === size)?.["#text"],
-	).find((url) => !!url);
+	const best = bestPlainUrl(images);
 
 	if (best) {
 		for (const size of LASTFM_UPSIZES) {
@@ -103,13 +110,21 @@ interface ArtworkSource {
 	artistImages?: LastfmImage[];
 }
 
+export interface ArtworkResult {
+	/** Ordered artwork URLs, highest resolution first */
+	candidates: string[];
+	/** Fast-loading Last.fm image for instant display ("" if none) */
+	instant: string;
+}
+
 /**
- * Ordered artwork URLs, highest resolution first. The UI walks the list on
- * load errors, so unreachable/404 entries degrade gracefully to Last.fm art.
+ * Resolves artwork for a track: hi-res candidates for the UI to walk through
+ * (unreachable/404 entries degrade gracefully), plus a fast Last.fm image to
+ * show instantly while the hi-res ones load.
  */
-export const buildArtworkCandidates = async (
+export const resolveArtwork = async (
 	source: ArtworkSource,
-): Promise<string[]> => {
+): Promise<ArtworkResult> => {
 	const candidates: string[] = [];
 
 	if (source.albumMbid) {
@@ -122,6 +137,9 @@ export const buildArtworkCandidates = async (
 	// Last resort: artist image (present with extended=1)
 	candidates.push(...lastfmImageChain(source.artistImages));
 
+	const instant =
+		bestPlainUrl(source.trackImages) ?? bestPlainUrl(source.artistImages) ?? "";
+
 	// Deduplicate while preserving order
-	return [...new Set(candidates)];
+	return { candidates: [...new Set(candidates)], instant };
 };
