@@ -1,149 +1,82 @@
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { useCollection } from "@/api/queries/useCollection";
-import { type ViewMode, ViewModes } from "@/api/types";
-import { CollectionCoverflow } from "@/components/CollectionCoverflow";
-import { type CollectionItem, filterAndSortReleases } from "@/lib/utils";
-import { CollectionTable } from "./components/CollectionTable";
-import { ModeToggle } from "./components/ModeToggle";
-import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
-import { Label } from "./components/ui/label";
-import { RadioGroup, RadioGroupItem } from "./components/ui/radio-group";
+import { AudioLines, Disc3 } from "lucide-react";
+import { lazy, Suspense, useState } from "react";
+import { useNowPlaying } from "@/api/queries/useNowPlaying";
+import { ModeToggle } from "@/components/ModeToggle";
+import { NowPlaying } from "@/components/NowPlaying";
+import { Button } from "@/components/ui/button";
+import { missingConfigKeys } from "@/config";
 
-const STORAGE_KEY = "discogs-username";
+// Lazy-loaded: keeps Swiper/TanStack Table out of the kiosk home view
+const CollectionBrowser = lazy(() =>
+	import("@/components/CollectionBrowser").then((m) => ({
+		default: m.CollectionBrowser,
+	})),
+);
+
+type View = "now-playing" | "collection";
+
+function MissingConfig({ missing }: { missing: string[] }) {
+	return (
+		<div className="h-screen flex flex-col items-center justify-center gap-4 p-6 text-center">
+			<h1 className="text-2xl font-bold">Configuration needed</h1>
+			<p className="text-muted-foreground max-w-md">
+				Create a <code className="text-foreground">.env.local</code> file in the
+				project root (see <code className="text-foreground">.env.example</code>)
+				with:
+			</p>
+			<ul className="text-left font-mono text-sm">
+				{missing.map((key) => (
+					<li key={key}>{key}=…</li>
+				))}
+			</ul>
+			<p className="text-muted-foreground">
+				Then restart the dev server or rebuild.
+			</p>
+		</div>
+	);
+}
 
 function App() {
-	const [username, setUsername] = useState("");
-	const [shouldFetch, setShouldFetch] = useState(false);
-	const [selectedFormat, setSelectedFormat] = useState<string>("all");
-	const [viewMode, setViewMode] = useState<ViewMode>("Coverflow");
+	const [view, setView] = useState<View>("now-playing");
+	const missing = missingConfigKeys();
+	const { data, isLoading, isError } = useNowPlaying(missing.length === 0);
 
-	const { data, error } = useCollection(shouldFetch ? username : "", 0);
-
-	// Load username from localStorage on mount
-	useEffect(() => {
-		try {
-			const savedUsername = localStorage.getItem(STORAGE_KEY);
-			if (savedUsername) {
-				setUsername(savedUsername);
-				setShouldFetch(true);
-			}
-		} catch {
-			// Continue without persistence - non-critical error
-		}
-	}, []);
-
-	// Save username to localStorage whenever it changes
-	useEffect(() => {
-		if (username) {
-			try {
-				localStorage.setItem(STORAGE_KEY, username);
-			} catch {
-				// Non-critical - user can re-enter on next visit
-			}
-		}
-	}, [username]);
-
-	useEffect(() => {
-		if (error) toast.error("Failed to load collection.");
-	}, [error]);
-
-	const fetchCollection = () => {
-		if (!username) return;
-		setShouldFetch(true);
-	};
-
-	const collection = useMemo<CollectionItem[] | undefined>(
-		() => filterAndSortReleases(data?.releases ?? [], selectedFormat),
-		[data, selectedFormat],
-	);
-
-	const formatFrequencies = useMemo<Record<string, number>>(() => {
-		return (
-			data?.releases?.reduce(
-				(acc, release) => {
-					new Set(
-						release.basic_information.formats.map((x) => x.name),
-					)?.forEach((format) => {
-						if (format !== "All Media") acc[format] = (acc[format] || 0) + 1;
-					});
-					return acc;
-				},
-				{} as Record<string, number>,
-			) ?? {}
-		);
-	}, [data]);
+	if (missing.length > 0) {
+		return <MissingConfig missing={missing} />;
+	}
 
 	return (
 		<div className="h-screen flex flex-col">
-			<div className="flex gap-2 items-center p-4 justify-between">
-				<div className="flex gap-2 items-center">
-					<Input
-						type="text"
-						name="username"
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter") fetchCollection();
-						}}
-						id="username"
-						autoComplete="username"
-						placeholder="Discogs Username"
-					/>
-					<Button type="button" onClick={fetchCollection}>
-						Load Collection
-					</Button>
-				</div>
-				<div>
-					<RadioGroup
-						className="flex"
-						onValueChange={(e) => setViewMode(e as ViewMode)}
-						value={viewMode}
-					>
-						{ViewModes.map((mode) => (
-							<div key={mode} className="flex items-center gap-2">
-								<RadioGroupItem value={mode} id={mode}></RadioGroupItem>
-								<Label htmlFor={mode}>{mode}</Label>
-							</div>
-						))}
-					</RadioGroup>
-				</div>
-				<div>
-					<RadioGroup
-						className="flex"
-						onValueChange={(e) => setSelectedFormat(e)}
-						value={selectedFormat}
-					>
-						<div className="flex items-center gap-2">
-							<RadioGroupItem value="all" id="all"></RadioGroupItem>
-							<Label htmlFor="all">All ({data?.releases?.length ?? 0})</Label>
-						</div>
-						{Object.entries(formatFrequencies).map(([formatName, count]) => (
-							<div key={formatName} className="flex items-center gap-2">
-								<RadioGroupItem
-									value={formatName}
-									id={formatName}
-								></RadioGroupItem>
-								<Label htmlFor={formatName}>
-									{formatName} ({count})
-								</Label>
-							</div>
-						))}
-					</RadioGroup>
-				</div>
+			<div className="flex-1 min-h-0">
+				{view === "now-playing" ? (
+					<NowPlaying track={data} isLoading={isLoading} isError={isError} />
+				) : (
+					<Suspense fallback={null}>
+						<CollectionBrowser />
+					</Suspense>
+				)}
+			</div>
+			<div className="fixed bottom-4 right-4 flex gap-1 rounded-full border bg-background/80 p-1 shadow-lg backdrop-blur">
+				<Button
+					variant="ghost"
+					size="icon"
+					aria-label={
+						view === "now-playing"
+							? "Show Discogs collection"
+							: "Show now playing"
+					}
+					onClick={() =>
+						setView(view === "now-playing" ? "collection" : "now-playing")
+					}
+				>
+					{view === "now-playing" ? (
+						<Disc3 className="h-5 w-5" />
+					) : (
+						<AudioLines className="h-5 w-5" />
+					)}
+				</Button>
 				<ModeToggle />
 			</div>
-			{viewMode === "Table" ? (
-				<div className="p-4 min-h-0 flex-1 overflow-hidden">
-					<CollectionTable className="h-full" collection={collection} />
-				</div>
-			) : (
-				<CollectionCoverflow
-					className="w-full flex-1"
-					collection={collection}
-				/>
-			)}
 		</div>
 	);
 }
