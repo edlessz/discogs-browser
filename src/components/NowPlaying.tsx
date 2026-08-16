@@ -28,6 +28,8 @@ interface NowPlayingProps {
 	track: NowPlayingTrack | null | undefined;
 	isLoading: boolean;
 	isError: boolean;
+	/** Show the artwork as a full-screen ambient backdrop */
+	showBackdrop?: boolean;
 	className?: string;
 }
 
@@ -35,6 +37,7 @@ export function NowPlaying({
 	track,
 	isLoading,
 	isError,
+	showBackdrop = true,
 	className,
 }: NowPlayingProps) {
 	const now = useNow();
@@ -94,7 +97,7 @@ export function NowPlaying({
 			{/* Ambient backdrop: the artwork itself, upscaled by the browser (no
 			    CSS blur filter — too heavy for weak kiosk GPUs) + a theme-aware
 			    scrim for text legibility. Same URL as the main art = cached. */}
-			{artSrc && (
+			{showBackdrop && artSrc && (
 				<div className="absolute inset-0" aria-hidden>
 					<img
 						key={`backdrop-${artSrc}`}

@@ -1,5 +1,5 @@
-import { AudioLines, Disc3 } from "lucide-react";
-import { lazy, Suspense, useState } from "react";
+import { AudioLines, Disc3, Image, ImageOff } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useNowPlaying } from "@/api/queries/useNowPlaying";
 import { ModeToggle } from "@/components/ModeToggle";
 import { NowPlaying } from "@/components/NowPlaying";
@@ -14,6 +14,16 @@ const CollectionBrowser = lazy(() =>
 );
 
 type View = "now-playing" | "collection";
+
+const BACKDROP_STORAGE_KEY = "now-playing-backdrop";
+
+const readBackdropPreference = (): boolean => {
+	try {
+		return localStorage.getItem(BACKDROP_STORAGE_KEY) !== "off";
+	} catch {
+		return true;
+	}
+};
 
 function MissingConfig({ missing }: { missing: string[] }) {
 	return (
@@ -38,8 +48,17 @@ function MissingConfig({ missing }: { missing: string[] }) {
 
 function App() {
 	const [view, setView] = useState<View>("now-playing");
+	const [showBackdrop, setShowBackdrop] = useState(readBackdropPreference);
 	const missing = missingConfigKeys();
 	const { data, isLoading, isError } = useNowPlaying(missing.length === 0);
+
+	useEffect(() => {
+		try {
+			localStorage.setItem(BACKDROP_STORAGE_KEY, showBackdrop ? "on" : "off");
+		} catch {
+			// Non-critical - preference just won't persist
+		}
+	}, [showBackdrop]);
 
 	if (missing.length > 0) {
 		return <MissingConfig missing={missing} />;
@@ -49,7 +68,12 @@ function App() {
 		<div className="h-screen flex flex-col">
 			<div className="flex-1 min-h-0">
 				{view === "now-playing" ? (
-					<NowPlaying track={data} isLoading={isLoading} isError={isError} />
+					<NowPlaying
+						track={data}
+						isLoading={isLoading}
+						isError={isError}
+						showBackdrop={showBackdrop}
+					/>
 				) : (
 					<Suspense fallback={null}>
 						<CollectionBrowser />
@@ -57,6 +81,24 @@ function App() {
 				)}
 			</div>
 			<div className="fixed bottom-4 right-4 flex gap-1 rounded-full border bg-background/80 p-1 shadow-lg backdrop-blur">
+				{view === "now-playing" && (
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label={
+							showBackdrop
+								? "Hide artwork background"
+								: "Show artwork background"
+						}
+						onClick={() => setShowBackdrop((v) => !v)}
+					>
+						{showBackdrop ? (
+							<ImageOff className="h-5 w-5" />
+						) : (
+							<Image className="h-5 w-5" />
+						)}
+					</Button>
+				)}
 				<Button
 					variant="ghost"
 					size="icon"
