@@ -17,4 +17,14 @@ export const SWIPER_CONFIG = {
 	DEPTH: 100,
 	MODIFIER: 1,
 	SCALE: 1,
+	FREE_MODE: {
+		/** Inertia after release, mobile-scroller style */
+		MOMENTUM_RATIO: 1,
+		/** How much flick velocity carries into momentum */
+		MOMENTUM_VELOCITY_RATIO: 1,
+		/** Rubber-band bounce at the ends */
+		MOMENTUM_BOUNCE: true,
+		/** Snap to the nearest slide once momentum settles */
+		STICKY: false,
+	},
 } as const;

@@ -1,7 +1,12 @@
 import { ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Swiper as SwiperType } from "swiper";
-import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
+import {
+	EffectCoverflow,
+	FreeMode,
+	Navigation,
+	Pagination,
+} from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { DISCOGS_URLS, SWIPER_CONFIG } from "@/api/constants";
 import { type CollectionItem, cn, getFormats } from "@/lib/utils";
@@ -27,10 +32,16 @@ export function CollectionCoverflow({
 	const swiperRef = useRef<SwiperType | null>(null);
 
 	// If Swiper initialized before slides existed (data still loading),
-	// jump to the restored index once they arrive.
+	// jump to the restored index once they arrive. Runs exactly once:
+	// initialIndex changes on every slideChange (position memory), and
+	// re-running slideTo mid-glide visibly yanks the coverflow.
 	const hasSlides = collection.length > 0;
+	const restoredRef = useRef(false);
 	useEffect(() => {
-		if (hasSlides) swiperRef.current?.slideTo(initialIndex, 0);
+		if (hasSlides && !restoredRef.current) {
+			restoredRef.current = true;
+			swiperRef.current?.slideTo(initialIndex, 0);
+		}
 	}, [hasSlides, initialIndex]);
 
 	const handleKeyDown = useCallback((event: KeyboardEvent) => {
@@ -84,7 +95,15 @@ export function CollectionCoverflow({
 							enabled: false,
 						}}
 						navigation={true}
-						modules={[EffectCoverflow, Pagination, Navigation]}
+						freeMode={{
+							enabled: true,
+							sticky: SWIPER_CONFIG.FREE_MODE.STICKY,
+							momentumRatio: SWIPER_CONFIG.FREE_MODE.MOMENTUM_RATIO,
+							momentumVelocityRatio:
+								SWIPER_CONFIG.FREE_MODE.MOMENTUM_VELOCITY_RATIO,
+							momentumBounce: SWIPER_CONFIG.FREE_MODE.MOMENTUM_BOUNCE,
+						}}
+						modules={[EffectCoverflow, FreeMode, Pagination, Navigation]}
 						className="h-half"
 						initialSlide={initialIndex}
 						onSwiper={(swiper) => {
