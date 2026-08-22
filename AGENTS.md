@@ -6,6 +6,7 @@ Discogs collection browser + Last.fm now-playing kiosk: Vite + React 19 + TypeSc
 
 - `bun dev` / `bun build` / `bun preview` — dev server / production build / preview
 - `bun start` — serves the production build on the LAN (this is the kiosk serving mode; kiosk device opens `http://<server-lan-ip>:4173`)
+- Docker (alternative kiosk serving): multi-stage `Dockerfile` (bun build → nginx). Config goes in via `--build-arg VITE_LASTFM_API_KEY=...` etc. (build args reach `bun run build` as process env, which Vite prioritizes over `.env` files). `.env*` is dockerignored on purpose — never bake real keys into an image, never push a built image anywhere public (args are visible in `docker history`).
 - `bun lint` — Biome check (lint + format + import order); `bun lint:fix` — auto-fix
 - There is **no typecheck script and no test script**. Typechecking only happens via `bun build` (`tsc -b && vite build`). Run `bun lint:fix && bun build` to verify changes.
 - Package manager: Bun (`bun.lock`).

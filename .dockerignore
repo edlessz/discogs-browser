@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+Dockerfile
+README.md
+AGENTS.md
+.vscode
+*.log
+
+# Never bake real keys into the image — use --build-arg (see Dockerfile)
+.env*
+!.env.example
